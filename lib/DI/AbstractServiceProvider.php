@@ -45,8 +45,12 @@ abstract class AbstractServiceProvider implements ServiceProviderContract
     {
         if (!$this->locator->has($name)) {
             $this->locator->addInstanceLazy($name, [
-                'className' => $className,
-                'constructorParams' => $constructFactory,
+                'constructor' => function () use($className, $constructFactory) {
+                    if($constructFactory) {
+                        return new $className(...$constructFactory());
+                    }
+                    return new $className();
+                },
             ]);
         }
     }

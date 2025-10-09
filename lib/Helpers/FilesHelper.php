@@ -47,4 +47,34 @@ class FilesHelper
             ));
         return $query;
     }
+
+    public static function copyRecursive(string $source, string $target)
+    {
+        if (!is_dir($source)) {
+            return;
+        }
+        $dir = opendir($source);
+        @mkdir($target, 0775, true);
+
+        while (false !== ($file = readdir($dir))) {
+            if ($file === '.' || $file === '..') {
+                continue;
+            }
+
+            $srcPath = $source . '/' . $file;
+            $dstPath = $target . '/' . $file;
+
+            if (is_dir($srcPath)) {
+                static::copyRecursive($srcPath, $dstPath);
+            } else {
+                @mkdir(dirname($dstPath), 0775, true);
+
+                if (!file_exists($dstPath)) {
+                    copy($srcPath, $dstPath);
+                }
+            }
+        }
+
+        closedir($dir);
+    }
 }

@@ -5,7 +5,7 @@
  * +стандартный routing_index не запускает контроллеры роута если они не в модуле, здесь можно размещать контроллеры вне модулей
  * @link https://git.beeralex-dev.ru/ITB-dev/routes_controllers_oauth
  */
-include_once($_SERVER['DOCUMENT_ROOT'] . '/local/modules/beeralex.core/routing_index.php');
+include_once($_SERVER['DOCUMENT_ROOT'] . '/local/modules/beeralex.core/include/routing_index.php');
 if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/404.php'))
 	include_once($_SERVER['DOCUMENT_ROOT'] . '/404.php');
 

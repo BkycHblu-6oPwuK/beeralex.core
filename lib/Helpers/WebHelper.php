@@ -5,7 +5,7 @@ namespace Beeralex\Core\Helpers;
 class WebHelper
 {
     private function __construct() {}
-    
+
     public static function getUuidV4(): string
     {
         $data = random_bytes(16);
@@ -36,5 +36,23 @@ class WebHelper
         header('Content-Type: application/json');
         echo \Bitrix\Main\Web\Json::encode($result);
         \CMain::FinalActions();
+    }
+    
+    public static function collectHttpHeaders(HttpHeaders $headers): array
+    {
+        $list = [];
+
+        foreach ($headers->toArray() as $header) {
+            $list[$header['name']] = $header['values'];
+        }
+
+        return $list;
+    }
+
+    public static function parseHttpProtocolVersion(?string $serverProtocol): string
+    {
+        return $serverProtocol !== null
+            ? str_replace('HTTP/', '', $serverProtocol)
+            : '1.0';
     }
 }

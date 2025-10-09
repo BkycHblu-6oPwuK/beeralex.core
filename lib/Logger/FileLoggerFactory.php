@@ -1,8 +1,9 @@
 <?php
-
 namespace Beeralex\Core\Logger;
 
-class FileLoggerFactory implements LoggerFactoryInterface
+use Psr\Log\LoggerInterface;
+
+class FileLoggerFactory implements LoggerFactoryContract
 {
     protected string $baseDir;
 
