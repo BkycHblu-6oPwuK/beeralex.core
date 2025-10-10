@@ -4,7 +4,7 @@ namespace Beeralex\Core\Repository;
 
 use Beeralex\Core\Helpers\HlblockHelper;
 
-abstract class BaseHighloadRepository extends BaseRepository implements CompiledEntityRepositoryContract
+class HighloadRepository extends Repository implements CompiledEntityRepositoryContract
 {
     public readonly int $entityId;
 

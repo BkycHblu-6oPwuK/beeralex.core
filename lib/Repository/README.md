@@ -2,10 +2,10 @@
 
 каждый репозиторий является абстракцией над ``` Bitrix\Main\ORM\Data\DataManager ``` битрикса и реализует интерфейс ``` Beeralex\Core\Repository\RepositoryContract ```
 
-наследуйтесь от ``` Beeralex\Core\Repository\BaseRepository ``` и реализуйте свою бизнес логику, например:
+наследуйтесь от ``` Beeralex\Core\Repository\Repository ``` и реализуйте свою бизнес логику, например:
 
 ```php
-class StoreRepository extends BaseRepository implements StoreRepositoryContract
+class StoreRepository extends Repository implements StoreRepositoryContract
 {
     public function __construct()
     {
@@ -36,31 +36,41 @@ class StoreRepository extends BaseRepository implements StoreRepositoryContract
     {
     }
 }
+// или
+
+new Repository(StoreTable::class)->query()
 ```
 
 
-Хайлоад блоки и инфоблоки по сути являются компилируемыми сущностями, поэтому для них есть интерфейс ``` Beeralex\Core\Repository\CompiledEntityRepositoryContract ```, каждый свой репозиторий наследуйте от ``` Beeralex\Core\Repository\BaseIblockRepository ``` для сущности инфоблока, или ``` Beeralex\Core\Repository\BaseHighloadRepository ``` для сущности хайлоада.
+Хайлоад блоки и инфоблоки по сути являются компилируемыми сущностями, поэтому для них есть интерфейс ``` Beeralex\Core\Repository\CompiledEntityRepositoryContract ```, каждый свой репозиторий наследуйте от ``` Beeralex\Core\Repository\IblockRepository ``` для сущности инфоблока, или ``` Beeralex\Core\Repository\HighloadRepository ``` для сущности хайлоада.
 
 для инфоблоков в констуктор репозитория нужно передать символьный код инфоблока или его id, так же для инфоблоков обязательно должен быть задан символьный код апи
 
 ```php
-class ProductsRepository extends BaseIblockRepository implements ProductRepositoryContract
+class ProductsRepository extends IblockRepository implements ProductRepositoryContract
 {
     public function __construct()
     {
         parent::__construct('catalog');
     }
 }
+
+// или
+new IblockRepository('catalog')->query();
 ```
+
+Добавление, обновление и удаление реализовано через старое api, свойства нужно передавать под ключом ``` PROPERTY_VALUES ```
 
 для хайлоадов нужно передавать название блока, или его id
 
 ```php
-class SmsCodeRepository extends BaseHighloadRepository implements SmsCodeRepositoryContract
+class SmsCodeRepository extends HighloadRepository implements SmsCodeRepositoryContract
 {
     public function __construct()
     {
         parent::__construct('SmsBuilding');
     }
 }
+// или
+new HighloadRepository('catalog')->query();
 ```

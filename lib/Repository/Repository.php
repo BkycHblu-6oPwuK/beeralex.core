@@ -9,7 +9,7 @@ use Bitrix\Main\SystemException;
 /**
  * @template T of DataManager
  */
-abstract class BaseRepository implements RepositoryContract
+class Repository implements RepositoryContract
 {
     /** @var class-string<T> */
     public readonly string $entityClass;

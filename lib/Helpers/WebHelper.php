@@ -2,6 +2,8 @@
 
 namespace Beeralex\Core\Helpers;
 
+use Bitrix\Main\Web\HttpHeaders;
+
 class WebHelper
 {
     private function __construct() {}

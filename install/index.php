@@ -2,6 +2,7 @@
 
 use Beeralex\Core\Helpers\FilesHelper;
 use Bitrix\Main\Application;
+use Bitrix\Main\Loader;
 
 class beeralex_core extends CModule
 {
@@ -16,6 +17,7 @@ class beeralex_core extends CModule
     public function DoInstall()
     {
         \Bitrix\Main\ModuleManager::registerModule($this->MODULE_ID);
+        Loader::includeModule($this->MODULE_ID);
         $this->copyLocalFiles();
     }
 
