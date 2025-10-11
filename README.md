@@ -21,7 +21,6 @@ composer require beeralex/beeralex.core
 - документация по билдеру настроек модуля - lib/Modules/Options/README.md
 - документация по ресурсам - lib/Http/Resources/README.md
 - документация по Vite - lib/Assets/README.md
-- документация по DI - lib/DI/README.md
 
 Классы Хэлперы
 

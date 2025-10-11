@@ -12,7 +12,7 @@ class FileLoggerFactory implements LoggerFactoryContract
         $this->baseDir = $baseDir;
     }
 
-    public function channel(string $name): LoggerInterface
+    public function channel(string $name = 'default'): LoggerInterface
     {
         return new FileLogger($name, $this->baseDir);
     }
