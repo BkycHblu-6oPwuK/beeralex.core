@@ -2,35 +2,10 @@
 
 namespace Beeralex\Core\Repository;
 
-use Bitrix\Main\ORM\Query\Query;
-use Bitrix\Main\ORM\Data\DataManager;
 use Bitrix\Main\SystemException;
 
-/**
- * @template T of DataManager
- */
-class Repository implements RepositoryContract
+class Repository extends AbstractRepository
 {
-    /** @var class-string<T> */
-    public readonly string $entityClass;
-
-    /**
-     * @param class-string<T> $entityClass
-     */
-    public function __construct(string $entityClass)
-    {
-        if (!is_subclass_of($entityClass, DataManager::class)) {
-            throw new SystemException("Invalid entity class in repository: {$entityClass}");
-        }
-        $this->entityClass = $entityClass;
-    }
-
-    /** @return Query<T> */
-    public function query(): Query
-    {
-        return $this->entityClass::query();
-    }
-
     public function all(array $filter = [], array $select = ['*'], array $order = []): array
     {
         return $this->query()
@@ -58,18 +33,18 @@ class Repository implements RepositoryContract
         return $this->one(['ID' => $id], $select);
     }
 
-    public function add(array $data): int
+    public function add(array|object $data): int
     {
-        $result = $this->entityClass::add($data);
+        $result = $this->entityClass::add((array)$data);
         if (!$result->isSuccess()) {
             throw new SystemException(implode(', ', $result->getErrorMessages()));
         }
         return $result->getId();
     }
 
-    public function update(int $id, array $data): void
+    public function update(int $id, array|object $data): void
     {
-        $result = $this->entityClass::update($id, $data);
+        $result = $this->entityClass::update($id, (array)$data);
         if (!$result->isSuccess()) {
             throw new SystemException(implode(', ', $result->getErrorMessages()));
         }
@@ -83,13 +58,13 @@ class Repository implements RepositoryContract
         }
     }
 
-    public function save(array $data): int
+    public function save(array|object $data): int
     {
         if (!empty($data['ID'])) {
-            $this->update((int)$data['ID'], $data);
+            $this->update((int)$data['ID'], (array)$data);
             return (int)$data['ID'];
         }
 
-        return $this->add($data);
+        return $this->add((array)$data);
     }
 }

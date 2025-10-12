@@ -24,9 +24,10 @@ class IblockRepository extends Repository implements CompiledEntityRepositoryCon
      * Добавление элемента через старое API
      * @param array $data поля инфоблока + свойства под ключом PROPERTY_VALUES
      */
-    public function add(array $data): int
+    public function add(array|object $data): int
     {
         $el = new \CIBlockElement();
+        $data = (array)$data;
 
         $data['IBLOCK_ID'] = $this->entityId;
 
@@ -51,10 +52,10 @@ class IblockRepository extends Repository implements CompiledEntityRepositoryCon
      * Обновление элемента через старое API
      * @param array $data поля инфоблока + свойства под ключом PROPERTY_VALUES
      */
-    public function update(int $id, array $data): void
+    public function update(int $id, array|object $data): void
     {
         $el = new \CIBlockElement();
-
+        $data = (array)$data;
         $propertyValues = $data['PROPERTY_VALUES'] ?? null;
         unset($data['PROPERTY_VALUES']);
 
@@ -78,19 +79,5 @@ class IblockRepository extends Repository implements CompiledEntityRepositoryCon
         if (!\CIBlockElement::Delete($id)) {
             throw new SystemException("Ошибка удаления элемента инфоблока #{$id}");
         }
-    }
-
-    /**
-     * Добавление или обновление элемента
-     * @param array $data поля инфоблока + свойства под ключом PROPERTY_VALUES
-     */
-    public function save(array $data): int
-    {
-        if (!empty($data['ID'])) {
-            $this->update((int)$data['ID'], $data);
-            return (int)$data['ID'];
-        }
-
-        return $this->add($data);
     }
 }
