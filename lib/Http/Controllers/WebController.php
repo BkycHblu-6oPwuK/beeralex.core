@@ -3,7 +3,7 @@ namespace Beeralex\Core\Http\Controllers;
 
 use Bitrix\Main\Engine\Controller;
 
-class WebController extends Controller
+abstract class WebController extends Controller
 {
     const VIEWS_PATH = '/local/views/';
 
