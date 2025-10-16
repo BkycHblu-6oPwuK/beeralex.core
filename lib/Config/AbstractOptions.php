@@ -35,4 +35,9 @@ abstract class AbstractOptions implements \JsonSerializable, \ArrayAccess, \Coun
         }
         return self::$instances[$class];
     }
+
+    public function get(string $key, mixed $default = null) : mixed
+    {
+        return $this->__get($key) ?: $default;
+    }
 }

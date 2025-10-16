@@ -187,3 +187,9 @@ final class Options extends AbstractOptions
     }
 }
 ```
+
+# Beeralex\Core\Config\Config
+
+Наследник AbstractOptions, получает настройки модуля beeralex.core в том числе ваши кастомные из local/config/beeralex_core_options.php.
+
+Через этот класс вы так же можете получать значения из переменных окружения (загруженные из .env и системные)

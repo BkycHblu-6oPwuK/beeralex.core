@@ -45,6 +45,11 @@ final class Config extends AbstractOptions
         return parent::__get($property) ?? $_ENV[$property] ?? null;
     }
 
+    public function offsetGet(mixed $offset): mixed
+    {
+        return parent::offsetGet($offset) ?? $_ENV[$offset] ?? null;
+    }
+
     public function getImagePublicPath(string $path)
     {
         return $this->pathToPublicImages . $path;
