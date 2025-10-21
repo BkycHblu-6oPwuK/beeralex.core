@@ -29,8 +29,8 @@ class beeralex_core extends CModule
     protected function copyLocalFiles()
     {
         $moduleDir = __DIR__;
-        $sourceDir = $moduleDir . '/local';
-        $targetDir = Application::getDocumentRoot() . '/local';
+        $sourceDir = $moduleDir . '/files';
+        $targetDir = Application::getDocumentRoot();
 
         FilesHelper::copyRecursive($sourceDir, $targetDir);
     }
