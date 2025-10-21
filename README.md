@@ -22,19 +22,6 @@ composer require beeralex/beeralex.core
 - документация по ресурсам - lib/Http/Resources/README.md
 - документация по Vite - lib/Assets/README.md
 
-Классы Хэлперы
-
-- DateHelper
-- FilesHelper
-- HlblockHelper
-- IblockHelper
-- LanguageHelper
-- LocationHelper
-- PaginationHelper
-- WebHelper
-- SsrHelper
-
-
 Psr logger - простая реализация, интерфейсы psr лежат в модуле main bitrix
 
 - Beeralex\Core\Logger\FileLogger
