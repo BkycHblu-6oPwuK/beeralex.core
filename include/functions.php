@@ -23,7 +23,7 @@ if (!function_exists('toFile')) {
     {
         static $logger = null;
         if ($logger === null) {
-            $logger = \Bitrix\Main\DI\ServiceLocator::getInstance()->get(\Beeralex\Core\Logger\LoggerFactoryContract::class)->channel();
+            $logger = service(\Beeralex\Core\Logger\LoggerFactoryContract::class)->channel();
         }
         if (!is_array($data)) {
             $data = [$data];
@@ -44,5 +44,17 @@ if (!function_exists('isImport')) {
     function isImport(): bool
     {
         return $_REQUEST['mode'] == 'import';
+    }
+}
+
+if (!function_exists('service')) {
+    /**
+     * @template T
+     * @param class-string<T> $class
+     * @return T
+     */
+    function service(string $class)
+    {
+        return \Bitrix\Main\DI\ServiceLocator::getInstance()->get($class);
     }
 }

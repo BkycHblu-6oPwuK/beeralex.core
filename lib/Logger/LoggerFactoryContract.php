@@ -5,5 +5,5 @@ use Psr\Log\LoggerInterface;
 
 interface LoggerFactoryContract
 {
-    public function channel(string $name): LoggerInterface;
+    public function channel(string $name = 'default'): LoggerInterface;
 }
