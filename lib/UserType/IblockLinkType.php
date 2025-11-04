@@ -36,11 +36,17 @@ class IblockLinkType
 
     public static function ConvertToDB($arProperty, $value)
     {
-        return $value;
+        return [
+            'VALUE' => $value['VALUE'],
+            'DESCRIPTION' => $value['DESCRIPTION'],
+        ];
     }
 
     public static function ConvertFromDB($arProperty, $value)
     {
-        return $value;
+        return [
+            'VALUE' => $value['VALUE'],
+            'DESCRIPTION' => $value['DESCRIPTION'],
+        ];
     }
 }
