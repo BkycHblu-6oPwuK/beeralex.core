@@ -77,4 +77,25 @@ class FilesHelper
 
         closedir($dir);
     }
+
+    /**
+     * @param string $path относительно $basePath
+     * 
+     ```php
+        public function fooAction()
+		{
+			FilesHelper::includeFile('catalog.index')
+		}
+     ```
+     */
+    public static function includeFile(string $path, array $params = [], string $basePath = '/include/'): void
+    {
+        $file = $_SERVER['DOCUMENT_ROOT'] . $basePath . str_replace('.', '/', $path) . '.php';
+        if (!file_exists($file)) {
+            return;
+        }
+
+        extract($params, EXTR_SKIP);
+        include $file;
+    }
 }

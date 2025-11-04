@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Catalog\Helper;
+namespace Beeralex\Core\Helpers;
 
 use Bitrix\Main\Loader;
 use Bitrix\Catalog\CatalogIblockTable;

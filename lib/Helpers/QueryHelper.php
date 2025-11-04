@@ -47,15 +47,14 @@ class QueryHelper extends BaseQueryHelper
      */
     protected static function convertObjectToArray(EntityObject $object): array
     {
-        $values = $object->collectValues();
-        foreach ($values as $field => $value) {
-            if ($value instanceof EntityObject) {
-                $values[$field] = static::convertObjectToArray($value);
-            } elseif ($value instanceof Collection) {
-                $values[$field] = static::convertCollectionToArray($value);
+        $runtimeValues = new \ReflectionProperty($object, '_runtimeValues');
+        $values = $object->collectValues(recursive: true);
+        $runtimeValues->setAccessible(true);
+        foreach((array)$runtimeValues->getValue($object) as $key => $item) {
+            if($item instanceof EntityObject) {
+                $values[$key] = static::convertObjectToArray($item);
             }
         }
-
         return $values;
     }
 }

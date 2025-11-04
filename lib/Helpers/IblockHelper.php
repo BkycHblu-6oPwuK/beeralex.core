@@ -2,8 +2,10 @@
 
 namespace Beeralex\Core\Helpers;
 
+use Beeralex\Core\Model\SectionModel;
 use Bitrix\Iblock\Iblock;
 use Bitrix\Iblock\IblockTable;
+use Bitrix\Iblock\ORM\Query;
 use Bitrix\Main\Loader;
 use Bitrix\Iblock\PropertyTable;
 
@@ -11,7 +13,7 @@ class IblockHelper
 {
     static $iblockCodeIdMap = [];
     static $entityMap = [];
-    
+
     private function __construct() {}
 
     /**
@@ -114,5 +116,20 @@ class IblockHelper
         }
 
         return $values;
+    }
+
+    /**
+     * Добавить склад/количество (STORE_PRODUCT) в запрос
+     */
+    public static function addSectionModelToQuery(Iblock|int $iblock, Query $query): Query
+    {
+        $sectionModel = SectionModel::compileEntityByIblock($iblock);
+        $query->registerRuntimeField('IBLOCK_MODEL_SECTION', [
+            'data_type' => $sectionModel,
+            'reference' => ["=this.IBLOCK_SECTION_ID" => 'ref.ID'],
+            'join_type' => 'LEFT',
+        ]);
+
+        return $query;
     }
 }

@@ -2,6 +2,8 @@
 
 namespace Beeralex\Core\Helpers;
 
+use Bitrix\Main\Context;
+use Bitrix\Main\Response;
 use Bitrix\Main\Web\HttpHeaders;
 
 class WebHelper
@@ -37,6 +39,7 @@ class WebHelper
         $APPLICATION->RestartBuffer();
         header('Content-Type: application/json');
         echo \Bitrix\Main\Web\Json::encode($result);
+        Context::getCurrent()->getResponse()->setStatus(200);
         \CMain::FinalActions();
     }
     
