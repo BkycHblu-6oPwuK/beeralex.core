@@ -6,7 +6,7 @@ class PaginationHelper
 {
     private function __construct() {}
     
-    public static function toArray(?\CIBlockResult $nav): array
+    public static function toArray(?\CIBlockResult $nav, int $pageWindow = 5): array
     {
         if (!$nav) {
             return [
@@ -19,7 +19,7 @@ class PaginationHelper
         }
 
         return [
-            'pages' => self::getPages($nav->NavPageNomer, $nav->NavPageCount),
+            'pages' => static::getPages($nav->NavPageNomer, $nav->NavPageCount, $pageWindow),
             'pageSize' => (int)$nav->NavPageSize,
             'currentPage' => (int)$nav->NavPageNomer,
             'pageCount' => (int)$nav->NavPageCount,
@@ -27,11 +27,8 @@ class PaginationHelper
         ];
     }
 
-    public static function getPages(int $currentPage, int $pageCount): array
+    public static function getPages(int $currentPage, int $pageCount, int $pageWindow = 5): array
     {
-        // Количество отображаемых страниц
-        $pageWindow = 5;
-
         if ($currentPage > floor($pageWindow / 2) + 1 && $pageCount > $pageWindow) {
             $startPage = $currentPage - floor($pageWindow / 2);
         } else {

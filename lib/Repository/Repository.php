@@ -8,24 +8,22 @@ class Repository extends AbstractRepository
 {
     public function all(array $filter = [], array $select = ['*'], array $order = []): array
     {
-        return $this->query()
+        $query = $this->query()
             ->setSelect($select)
             ->setFilter($filter)
-            ->setOrder($order)
-            ->exec()
-            ->fetchAll();
+            ->setOrder($order);
+
+        return $this->useDecompose ? $this->queryHelper::decomposeToArray($query) : $query->fetchAll();
     }
 
     public function one(array $filter = [], array $select = ['*']): ?array
     {
-        $row = $this->query()
+        $query = $this->query()
             ->setSelect($select)
             ->setFilter($filter)
-            ->setLimit(1)
-            ->exec()
-            ->fetch();
-
-        return $row ?: null;
+            ->setLimit(1);
+        $result = $this->useDecompose ? $this->queryHelper::decomposeToArray($query)[0] : $query->fetch();
+        return empty($result) ? null : $result;
     }
 
     public function getById(int $id, array $select = ['*']): ?array

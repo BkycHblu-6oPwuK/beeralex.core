@@ -1,4 +1,5 @@
 <?php
+
 namespace Beeralex\Core\Helpers;
 
 class PathHelper
@@ -37,5 +38,13 @@ class PathHelper
     public static function normalize(string $path): string
     {
         return realpath($path) ?: $path;
+    }
+
+    public static function getCurUri(): \Bitrix\Main\Web\Uri
+    {
+        $server = \Bitrix\Main\Context::getCurrent()->getServer();
+        $host = $server->getHttpHost();
+        $scheme = $server->getRequestScheme();
+        return new \Bitrix\Main\Web\Uri($scheme . '://' . $host . $server->getRequestUri());
     }
 }

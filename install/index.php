@@ -2,6 +2,7 @@
 
 use Beeralex\Core\Helpers\FilesHelper;
 use Beeralex\Core\UserType\IblockLinkType;
+use Beeralex\Core\UserType\WebFormLinkType;
 use Bitrix\Main\Application;
 use Bitrix\Main\EventManager;
 use Bitrix\Main\Loader;
@@ -44,11 +45,13 @@ class beeralex_core extends CModule
     {
         $eventManager = EventManager::getInstance();
         $eventManager->registerEventHandler('iblock', 'OnIBlockPropertyBuildList', $this->MODULE_ID, IblockLinkType::class, 'GetUserTypeDescription');
+        $eventManager->registerEventHandler('iblock', 'OnIBlockPropertyBuildList', $this->MODULE_ID, WebFormLinkType::class, 'GetUserTypeDescription');
     }
 
     public function UnInstallEvents()
     {
         $eventManager = EventManager::getInstance();
         $eventManager->unRegisterEventHandler('iblock', 'OnIBlockPropertyBuildList', $this->MODULE_ID, IblockLinkType::class, 'GetUserTypeDescription');
+        $eventManager->unRegisterEventHandler('iblock', 'OnIBlockPropertyBuildList', $this->MODULE_ID, WebFormLinkType::class, 'GetUserTypeDescription');
     }
 }

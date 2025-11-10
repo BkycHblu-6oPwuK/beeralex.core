@@ -1,5 +1,6 @@
 <?php
 
+use Beeralex\Core\Helpers\QueryHelper;
 use Beeralex\Core\Logger\FileLoggerFactory;
 use Beeralex\Core\Logger\LoggerFactoryContract;
 
@@ -11,6 +12,9 @@ return [
                     return new FileLoggerFactory($_SERVER['DOCUMENT_ROOT'] . '/local/logs');
                 },
             ],
+            QueryHelper::class => [
+                'classname' => QueryHelper::class
+            ]
         ],
     ],
 ];
