@@ -13,7 +13,7 @@ return [
                 },
             ],
             QueryHelper::class => [
-                'classname' => QueryHelper::class
+                'className' => QueryHelper::class
             ]
         ],
     ],
