@@ -1,6 +1,7 @@
 <?php
 
 use Beeralex\Core\Helpers\FilesHelper;
+use Beeralex\Core\Service\FileService;
 use Beeralex\Core\UserType\IblockLinkType;
 use Beeralex\Core\UserType\WebFormLinkType;
 use Bitrix\Main\Application;
@@ -9,19 +10,22 @@ use Bitrix\Main\Loader;
 
 class beeralex_core extends CModule
 {
-    var $MODULE_ID = 'beeralex.core';
-    var $MODULE_NAME = 'beeralex.core';
-    var $MODULE_DESCRIPTION = "beeralex.core";
-    var $MODULE_VERSION = "1.0";
-    var $MODULE_VERSION_DATE = "2024-04-09 12:00:00";
-    var $PARTNER_NAME = 'beeralex.core';
-    var $PARTNER_URI = 'beeralex.core';
+    public function __construct()
+    {
+        $this->MODULE_ID = 'beeralex.core';
+        $this->MODULE_VERSION = '1.1.0';
+        $this->MODULE_VERSION_DATE = '2024-04-09 12:00:00';
+        $this->MODULE_NAME = 'beeralex.core';
+        $this->MODULE_DESCRIPTION = 'beeralex.core module';
+        $this->PARTNER_NAME = 'beeralex';
+        $this->PARTNER_URI = '#';
+    }
 
     public function DoInstall()
     {
         \Bitrix\Main\ModuleManager::registerModule($this->MODULE_ID);
         Loader::includeModule($this->MODULE_ID);
-        $this->copyLocalFiles();
+        $this->InstallFiles();
         $this->InstallEvents();
     }
 
@@ -32,13 +36,13 @@ class beeralex_core extends CModule
         \Bitrix\Main\ModuleManager::unRegisterModule($this->MODULE_ID);
     }
 
-    protected function copyLocalFiles()
+    public function InstallFiles()
     {
         $moduleDir = __DIR__;
         $sourceDir = $moduleDir . '/files';
         $targetDir = Application::getDocumentRoot();
 
-        FilesHelper::copyRecursive($sourceDir, $targetDir);
+        service(FileService::class)->copyRecursive($sourceDir, $targetDir);
     }
 
     public function InstallEvents()

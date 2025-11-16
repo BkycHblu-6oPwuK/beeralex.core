@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Beeralex\Core\UserType;
 
 class WebFormLinkType
@@ -18,7 +19,7 @@ class WebFormLinkType
         ];
     }
 
-    public static function GetPropertyFieldHtml($arProperty, $value, $strHTMLControlName)
+    public static function GetPropertyFieldHtml(array $arProperty, array $value, array $strHTMLControlName)
     {
         if (!\Bitrix\Main\Loader::includeModule('form')) {
             return '<span style="color:red;">Модуль "form" не установлен</span>';
@@ -38,7 +39,7 @@ class WebFormLinkType
             . '</select>';
     }
 
-    public static function ConvertToDB($arProperty, $value)
+    public static function ConvertToDB(array $arProperty, array $value)
     {
         return [
             'VALUE' => $value['VALUE'],
@@ -46,7 +47,7 @@ class WebFormLinkType
         ];
     }
 
-    public static function ConvertFromDB($arProperty, $value)
+    public static function ConvertFromDB(array $arProperty, array $value)
     {
         return [
             'VALUE' => $value['VALUE'],

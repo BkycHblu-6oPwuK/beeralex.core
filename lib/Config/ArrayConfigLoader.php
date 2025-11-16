@@ -1,7 +1,7 @@
 <?php
 namespace Beeralex\Core\Config;
 
-class ArrayConfigLoader extends BaseConfigLoader
+class ArrayConfigLoader extends AbstractConfigLoader
 {
     protected function validate($data, string $fileName)
     {

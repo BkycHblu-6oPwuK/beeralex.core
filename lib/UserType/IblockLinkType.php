@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 namespace Beeralex\Core\UserType;
 
 class IblockLinkType
@@ -19,7 +19,7 @@ class IblockLinkType
         ];
     }
 
-    public static function GetPropertyFieldHtml($arProperty, $value, $strHTMLControlName)
+    public static function GetPropertyFieldHtml(array $arProperty, array $value, array $strHTMLControlName)
     {
         $res = \CIBlock::GetList([], ['ACTIVE' => 'Y']);
         $options = '';
@@ -34,7 +34,7 @@ class IblockLinkType
             . '</select>';
     }
 
-    public static function ConvertToDB($arProperty, $value)
+    public static function ConvertToDB(array $arProperty, array $value)
     {
         return [
             'VALUE' => $value['VALUE'],
@@ -42,7 +42,7 @@ class IblockLinkType
         ];
     }
 
-    public static function ConvertFromDB($arProperty, $value)
+    public static function ConvertFromDB(array $arProperty, array $value)
     {
         return [
             'VALUE' => $value['VALUE'],

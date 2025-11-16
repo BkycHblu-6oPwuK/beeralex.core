@@ -2,7 +2,9 @@
 
 namespace Beeralex\Core\Config;
 
-class OptionsLoader extends BaseConfigLoader
+use Beeralex\Core\Config\Module\Schema\Schema;
+
+class OptionsLoader extends AbstractConfigLoader
 {
     protected function validate($data, string $fileName)
     {
@@ -15,8 +17,8 @@ class OptionsLoader extends BaseConfigLoader
         return $data;
     }
 
-    protected function defaultValue(): null
+    protected function defaultValue(): Schema
     {
-        return null;
+        return new Schema();
     }
 }

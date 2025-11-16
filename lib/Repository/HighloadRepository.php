@@ -1,8 +1,8 @@
 <?php
-
+declare(strict_types=1);
 namespace Beeralex\Core\Repository;
 
-use Beeralex\Core\Helpers\HlblockHelper;
+use Beeralex\Core\Service\HlblockService;
 
 class HighloadRepository extends Repository implements CompiledEntityRepositoryContract
 {
@@ -10,10 +10,11 @@ class HighloadRepository extends Repository implements CompiledEntityRepositoryC
 
     public function __construct(string|int $highloadNameOrId)
     {
+        $hlblockService = service(HlblockService::class);
         if (is_string($highloadNameOrId)) {
-            $highloadNameOrId = HlblockHelper::getHlblockIdByName($highloadNameOrId);
+            $highloadNameOrId = $hlblockService->getHlblockIdByName($highloadNameOrId);
         }
         $this->entityId = $highloadNameOrId;
-        parent::__construct(HlblockHelper::getHlblockById($highloadNameOrId));
+        parent::__construct($hlblockService->getHlblockById($highloadNameOrId));
     }
 }

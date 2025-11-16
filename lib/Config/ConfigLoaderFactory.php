@@ -1,19 +1,15 @@
-<?php
+<?php 
 namespace Beeralex\Core\Config;
-
-use Beeralex\Core\Config\OptionsLoader;
 
 class ConfigLoaderFactory
 {
-    private static array $instances = [];
-    
-    public static function getOptionsLoader(): OptionsLoader
+    public function createOptionsLoader(?string $configDir = null): OptionsLoader
     {
-        return self::$instances[OptionsLoader::class] ??= new OptionsLoader();
+        return new OptionsLoader($configDir);
     }
-    
-    public static function getArrayLoader(): ArrayConfigLoader
+
+    public function createArrayConfigLoader(?string $configDir = null): ArrayConfigLoader
     {
-        return self::$instances[ArrayConfigLoader::class] ??= new ArrayConfigLoader();
+        return new ArrayConfigLoader($configDir);
     }
 }

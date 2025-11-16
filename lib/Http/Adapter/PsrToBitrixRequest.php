@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 namespace Beeralex\Core\Http\Adapter;
 
 use Bitrix\Main\HttpRequest;
@@ -8,7 +8,7 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class PsrToBitrixRequest
 {
-    public static function convert(ServerRequestInterface $psrRequest): HttpRequest
+    public function convert(ServerRequestInterface $psrRequest): HttpRequest
     {
         $serverParams = $psrRequest->getServerParams();
         $serverParams['REQUEST_METHOD'] = $psrRequest->getMethod();
@@ -19,7 +19,7 @@ class PsrToBitrixRequest
         $serverParams['SERVER_PROTOCOL'] = 'HTTP/' . $psrRequest->getProtocolVersion();
 
         foreach ($psrRequest->getHeaders() as $name => $values) {
-            $key = 'HTTP_' . strtoupper(str_replace('-', '_', $name));
+            $key = 'HTTP_' . strtoupper(str_replace('-', '_', (string)$name));
             $serverParams[$key] = implode(', ', $values);
 
             if ($key === 'HTTP_CONTENT_TYPE') {
@@ -34,7 +34,7 @@ class PsrToBitrixRequest
         $query = $psrRequest->getQueryParams();
         $post = is_array($psrRequest->getParsedBody()) ? $psrRequest->getParsedBody() : [];
         $cookies = $psrRequest->getCookieParams();
-        $files = self::normalizeUploadedFiles($psrRequest->getUploadedFiles());
+        $files = $this->normalizeUploadedFiles($psrRequest->getUploadedFiles());
 
         $bitrixRequest = new HttpRequest(
             $server,
@@ -50,13 +50,13 @@ class PsrToBitrixRequest
     /**
      * Преобразует массив PSR UploadedFileInterface в Bitrix-совместимый формат $_FILES
      */
-    private static function normalizeUploadedFiles(array $uploadedFiles): array
+    protected function normalizeUploadedFiles(array $uploadedFiles): array
     {
         $result = [];
 
         foreach ($uploadedFiles as $key => $file) {
             if (is_array($file)) {
-                $result[$key] = self::normalizeUploadedFiles($file);
+                $result[$key] = $this->normalizeUploadedFiles($file);
                 continue;
             }
 

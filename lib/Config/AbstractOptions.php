@@ -9,9 +9,7 @@ abstract class AbstractOptions implements \JsonSerializable, \ArrayAccess, \Coun
 {
     use Resourceble;
 
-    private static array $instances = [];
-
-    protected function __construct()
+    public final function __construct()
     {
         $moduleId = $this->getModuleId();
         if ($moduleId === '') {
@@ -26,15 +24,6 @@ abstract class AbstractOptions implements \JsonSerializable, \ArrayAccess, \Coun
     abstract public function getModuleId(): string;
 
     protected function validateOptions(): void {}
-
-    public static function getInstance(): static
-    {
-        $class = static::class;
-        if (!isset(self::$instances[$class])) {
-            self::$instances[$class] = new static();
-        }
-        return self::$instances[$class];
-    }
 
     public function get(string $key, mixed $default = null) : mixed
     {

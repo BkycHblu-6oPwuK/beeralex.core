@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Beeralex\Core\Http\Resources;
 
 use Beeralex\Core\Traits\Resourceble;

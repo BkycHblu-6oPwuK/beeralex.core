@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 namespace Beeralex\Core\Http\Request;
 
 use Bitrix\Main\Validation\ValidationResult;
@@ -9,7 +9,7 @@ abstract class AbstractRequestDto implements RequestDtoContract
 {
     private ?ValidationResult $validationResult = null;
 
-    public static function fromArray(array $data): self
+    public static function fromArray(array $data): static
     {
         $static = new static();
         foreach ($data as $key => $value) {

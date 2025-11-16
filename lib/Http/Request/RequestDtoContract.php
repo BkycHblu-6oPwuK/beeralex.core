@@ -5,7 +5,7 @@ use Bitrix\Main\Validation\ValidationResult;
 
 interface RequestDtoContract
 {
-    public static function fromArray(array $data): self;
+    public static function fromArray(array $data): static;
     public function getData(): array;
     public function isValid(): bool;
     public function getErrors(): array;

@@ -1,8 +1,8 @@
 <?php
-
+declare(strict_types=1);
 namespace Beeralex\Core\Repository;
 
-use Beeralex\Core\Helpers\IblockHelper;
+use Beeralex\Core\Service\IblockService;
 use Bitrix\Main\SystemException;
 
 class IblockRepository extends Repository implements CompiledEntityRepositoryContract
@@ -11,13 +11,14 @@ class IblockRepository extends Repository implements CompiledEntityRepositoryCon
 
     public function __construct(string|int $iblockCodeOrId)
     {
+        $iblockService = service(IblockService::class);
         if (is_string($iblockCodeOrId)) {
-            $iblockCodeOrId = IblockHelper::getIblockIdByCode($iblockCodeOrId);
+            $iblockCodeOrId = $iblockService->getIblockIdByCode($iblockCodeOrId);
         }
 
         $this->entityId = (int)$iblockCodeOrId;
 
-        parent::__construct(IblockHelper::getElementApiTable($iblockCodeOrId), true);
+        parent::__construct($iblockService->getElementApiTable($iblockCodeOrId), true);
     }
 
     /**

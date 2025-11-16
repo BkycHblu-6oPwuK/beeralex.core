@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 namespace Beeralex\Core\Http;
 
 use Beeralex\Core\Http\Adapter\BitrixToPsrRequest;
@@ -21,39 +21,39 @@ class HttpFactory
     /**
      * Преобразовать Bitrix HttpRequest → PSR ServerRequestInterface
      */
-    public static function fromBitrixRequest(HttpRequest $request): ServerRequestInterface
+    public function fromBitrixRequest(HttpRequest $request): ServerRequestInterface
     {
-        return BitrixToPsrRequest::convert($request);
+        return service(BitrixToPsrRequest::class)->convert($request);
     }
 
     /**
      * Преобразовать Bitrix HttpResponse → PSR ResponseInterface
      */
-    public static function fromBitrixResponse(HttpResponse $response): ResponseInterface
+    public function fromBitrixResponse(HttpResponse $response): ResponseInterface
     {
-        return BitrixToPsrResponse::convert($response);
+        return service(BitrixToPsrResponse::class)->convert($response);
     }
 
     /**
      * Преобразовать PSR ServerRequestInterface → Bitrix HttpRequest
      */
-    public static function toBitrixRequest(ServerRequestInterface $psrRequest): HttpRequest
+    public function toBitrixRequest(ServerRequestInterface $psrRequest): HttpRequest
     {
-        return PsrToBitrixRequest::convert($psrRequest);
+        return service(PsrToBitrixRequest::class)->convert($psrRequest);
     }
 
     /**
      * Преобразовать PSR ResponseInterface → Bitrix HttpResponse
      */
-    public static function toBitrixResponse(ResponseInterface $psrResponse): HttpResponse
+    public function toBitrixResponse(ResponseInterface $psrResponse): HttpResponse
     {
-        return PsrToBitrixResponse::convert($psrResponse);
+        return service(PsrToBitrixResponse::class)->convert($psrResponse);
     }
 
     /**
      * Создать пустой PSR Response (например, для middleware)
      */
-    public static function createEmptyResponse(int $status = 200): ResponseInterface
+    public function createEmptyResponse(int $status = 200): ResponseInterface
     {
         return new Response($status);
     }
@@ -61,7 +61,7 @@ class HttpFactory
     /**
      * Создать пустой PSR Request (например, для тестов)
      */
-    public static function createEmptyRequest(string $method = 'GET', string $uri = '/'): ServerRequestInterface
+    public function createEmptyRequest(string $method = 'GET', string $uri = '/'): ServerRequestInterface
     {
         return new ServerRequest($method, $uri);
     }

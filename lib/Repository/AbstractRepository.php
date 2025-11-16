@@ -1,8 +1,8 @@
 <?php
-
+declare(strict_types=1);
 namespace Beeralex\Core\Repository;
 
-use Beeralex\Core\Helpers\QueryHelper;
+use Beeralex\Core\Service\QueryService;
 use Bitrix\Main\ORM\Query\Query;
 use Bitrix\Main\ORM\Data\DataManager;
 use Bitrix\Main\SystemException;
@@ -14,7 +14,7 @@ abstract class AbstractRepository implements RepositoryContract
 {
     /** @var class-string<T> */
     public readonly string $entityClass;
-    public readonly QueryHelper $queryHelper;
+    public readonly QueryService $queryService;
     public bool $useDecompose;
 
     /**
@@ -27,7 +27,7 @@ abstract class AbstractRepository implements RepositoryContract
         }
         $this->entityClass = $entityClass;
         $this->useDecompose = $useDecompose;
-        $this->queryHelper = service(QueryHelper::class);
+        $this->queryService = service(QueryService::class);
     }
 
     public function query(): Query

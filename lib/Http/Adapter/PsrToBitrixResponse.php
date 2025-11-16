@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 namespace Beeralex\Core\Http\Adapter;
 
 use Bitrix\Main\HttpResponse;
@@ -8,7 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 
 class PsrToBitrixResponse
 {
-    public static function convert(ResponseInterface $psrResponse): HttpResponse
+    public function convert(ResponseInterface $psrResponse): HttpResponse
     {
         $headers = new HttpHeaders();
 

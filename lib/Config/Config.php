@@ -11,9 +11,7 @@ final class Config extends AbstractOptions
     public readonly bool $isEnableSsr;
     public readonly string $viteSsrPort;
     public readonly string $viteSsrHost;
-    public readonly string $pathToPublicImages;
-    public readonly string $actionLoadItems;
-
+    
     protected function mapOptions(array $options): void
     {
         $this->mode = $_ENV['MODE'] ?? 'production';
@@ -23,8 +21,6 @@ final class Config extends AbstractOptions
         $this->isEnableSsr = $_ENV['VITE_SSR_ENABLE'] == 1;
         $this->viteSsrPort = $_ENV['VITE_SSR_PORT'] ?? '';
         $this->viteSsrHost = $_ENV['VITE_SSR_HOST'] ?? '';
-        $this->pathToPublicImages = "/{$this->viteBasePath}/public";
-        $this->actionLoadItems = 'loadItems';
         foreach ($options as $key => $value) {
             $value = match ($value) {
                 'Y' => true,
@@ -48,11 +44,6 @@ final class Config extends AbstractOptions
     public function offsetGet(mixed $offset): mixed
     {
         return parent::offsetGet($offset) ?? $_ENV[$offset] ?? null;
-    }
-
-    public function getImagePublicPath(string $path)
-    {
-        return $this->pathToPublicImages . $path;
     }
 
     public function getModuleId(): string
