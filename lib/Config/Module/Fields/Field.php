@@ -90,7 +90,7 @@ abstract class Field
         return [$this->getType(), $this->getExtraOptions()];
     }
 
-    public function getExtraOptions() : string|array
+    public function getExtraOptions() : array|string|int|null
     {
         return $this->extraOptions;
     }
