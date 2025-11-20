@@ -12,7 +12,7 @@ class SchemaTab
         protected string $description
     ) {}
 
-    public function checkbox(string $name, string $help, ?string $label = null, bool $disabled = false, bool $checked = false): static
+    public function checkbox(string $name, string $help, ?string $label = null, bool $disabled = false, bool $checkedDefault = false): static
     {
         $this->fields[] = [
             'type' => 'checkbox',
@@ -20,7 +20,7 @@ class SchemaTab
             'help' => $help,
             'label' => $label,
             'disabled' => $disabled,
-            'checked' => $checked,
+            'checked' => $checkedDefault,
         ];
         return $this;
     }

@@ -31,7 +31,7 @@ $addedAccessTab = false;
 if ($localOptionsFileName) {
     $schemaLocal = $configLoaderFactory->createOptionsLoader()->tryLoad($localOptionsFileName);
     if ($schemaLocal) {
-        $schemaLocal->tab("edit2", Loc::getMessage("MAIN_TAB_RIGHTS"), Loc::getMessage("MAIN_TAB_TITLE_RIGHTS"));
+        $schemaLocal->tab("tab_rights", Loc::getMessage("MAIN_TAB_RIGHTS"), Loc::getMessage("MAIN_TAB_TITLE_RIGHTS"));
         $addedAccessTab = true;
         $localTabs = $schemaLocal->toArray();
     }
@@ -39,7 +39,7 @@ if ($localOptionsFileName) {
 
 if ($schemaModule) {
     if (!$addedAccessTab) {
-        $schemaModule->tab("edit2", Loc::getMessage("MAIN_TAB_RIGHTS"), Loc::getMessage("MAIN_TAB_TITLE_RIGHTS"));
+        $schemaModule->tab("tab_rights", Loc::getMessage("MAIN_TAB_RIGHTS"), Loc::getMessage("MAIN_TAB_TITLE_RIGHTS"));
     }
     $moduleTabs = $schemaModule->toArray();
 }

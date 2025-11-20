@@ -31,7 +31,7 @@ class FuserService
             if (Option::get('sale', 'encode_fuser_id', 'N') == 'Y' && strval($code) != '') {
                 $res = CSaleUser::GetList(['CODE' => $code]);
                 if(!empty($res)) {
-                    $id = $res['ID'];
+                    $id = (int)$res['ID'];
                 }
             } elseif ((int)$code > 0) {
                 $id = (int)$code;
@@ -46,10 +46,10 @@ class FuserService
      */
     public function getUserId(int $fuserId): ?int
     {
-        return FuserTable::getRow([
+        return (int)FuserTable::getRow([
             'select' => ['USER_ID'],
             'filter' => ['ID' => $fuserId]
-        ])['USER_ID'];
+        ])['USER_ID'] ?: null;
     }
 
     /**
@@ -57,10 +57,10 @@ class FuserService
      */
     public function getFuserIdForUser(int $userId): ?int
     {
-        return FuserTable::getRow([
+        return (int)FuserTable::getRow([
             'select' => ['ID'],
             'filter' => ['USER_ID' => $userId]
-        ])['ID'];
+        ])['ID'] ?: null;
     }
 
     /**
@@ -68,11 +68,11 @@ class FuserService
      */
     public function addFuserForUser(int $userId): int
     {
-        return FuserTable::add([
+        return (int)FuserTable::add([
             'DATE_INSERT' => new DateTime(),
             'DATE_UPDATE' => new DateTime(),
             'USER_ID'      => $userId,
             'CODE'         => md5(time() . Random::getString(10, true)),
-        ])->getId();
+        ])->getId() ?: 0;
     }
 }

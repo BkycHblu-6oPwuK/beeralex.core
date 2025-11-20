@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 if (!function_exists('firstNotEmpty')) {
     /**
      * Возвращает первое непустое значение или значение по умолчанию

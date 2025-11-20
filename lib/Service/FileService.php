@@ -37,7 +37,7 @@ class FileService
             'reference' => [
                 "=this.{$thisFieldReference}" => 'ref.ID',
             ],
-            'join_type' => 'INNER'
+            'join_type' => 'LEFT'
         ])
             ->registerRuntimeField('PICTURE_SRC', new ExpressionField(
                 'PICTURE_SRC',
