@@ -1,6 +1,5 @@
 <?php
 
-use Beeralex\Core\Helpers\FilesHelper;
 use Beeralex\Core\Service\FileService;
 use Beeralex\Core\UserType\IblockLinkType;
 use Beeralex\Core\UserType\WebFormLinkType;
