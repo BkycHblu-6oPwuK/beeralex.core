@@ -63,7 +63,7 @@ class UserService
             $this->secureShuffle($chars);
 
             $password = \implode('', $chars);
-            if ($this->validateByPolicy($password, $policy, $lower, $upper, $digits, $special)) {
+            if ($this->validateByPolicy($password, $policy)) {
                 return $password;
             }
         }
@@ -91,6 +91,12 @@ class UserService
     {
         $defaultGroups = Option::get('main', 'new_user_registration_def_group', '');
         return $defaultGroups ? \explode(',', $defaultGroups) : [];
+    }
+
+    public function validatePassword(string $password, array $groupIds): bool
+    {
+        $policy = $this->getPolicyByGroups($groupIds);
+        return $this->validateByPolicy($password, $policy);
     }
 
     public function generateCode(int $length = 6): string
@@ -121,21 +127,10 @@ class UserService
         ];
     }
 
-    protected function validateByPolicy(string $password, array $policy, string $lower, string $upper, string $digits, string $special): bool
+    protected function validateByPolicy(string $password, array $policy): bool
     {
-        $minLen       = (int)($policy['PASSWORD_LENGTH'] ?? 6);
-        $requireUpper = $this->toBool($policy['PASSWORD_UPPERCASE'] ?? false);
-        $requireLower = $this->toBool($policy['PASSWORD_LOWERCASE'] ?? false);
-        $requireDigits = $this->toBool($policy['PASSWORD_DIGITS'] ?? false);
-        $requirePunct = $this->toBool($policy['PASSWORD_PUNCTUATION'] ?? false);
-
-        if (\mb_strlen($password, '8bit') < $minLen) return false;
-        if ($requireLower  && !$this->containsAny($password, $lower))   return false;
-        if ($requireUpper  && !$this->containsAny($password, $upper))   return false;
-        if ($requireDigits && !$this->containsAny($password, $digits))  return false;
-        if ($requirePunct  && !$this->containsAny($password, $special)) return false;
-
-        return true;
+        $result = \CUser::CheckPasswordAgainstPolicy($password, $policy);
+        return $result === true;
     }
 
     protected function toBool(mixed $v): bool
@@ -150,17 +145,6 @@ class UserService
     {
         $i = \random_int(0, \strlen($alphabet) - 1);
         return $alphabet[$i];
-    }
-
-    protected function containsAny(string $haystack, string $alphabet): bool
-    {
-        $len = \strlen($alphabet);
-        for ($i = 0; $i < $len; $i++) {
-            if (\str_contains($haystack, $alphabet[$i])) {
-                return true;
-            }
-        }
-        return false;
     }
 
     protected function secureShuffle(array &$arr): void
