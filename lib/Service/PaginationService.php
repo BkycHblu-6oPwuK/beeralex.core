@@ -24,7 +24,7 @@ class PaginationService
         }
 
         return [
-            'pages' => $this->getPages($nav->NavPageNomer, $nav->NavPageCount, $pageWindow),
+            'pages' => $this->getPages((int)$nav->NavPageNomer, (int)$nav->NavPageCount, $pageWindow),
             'pageSize' => (int)$nav->NavPageSize,
             'currentPage' => (int)$nav->NavPageNomer,
             'pageCount' => (int)$nav->NavPageCount,
@@ -61,7 +61,7 @@ class PaginationService
 
     public function getPagination(int $itemsCnt, int $pageSize, string $pageUrlParam = 'page'): array
     {
-        $pageCount = max(1, ceil($itemsCnt / $pageSize));
+        $pageCount = (int)max(1, ceil($itemsCnt / $pageSize));
         $requestPage = (int)\Bitrix\Main\Context::getCurrent()->getRequest()->get($pageUrlParam);
         $currentPage = $requestPage ? min($requestPage, $pageCount) : 1;
 

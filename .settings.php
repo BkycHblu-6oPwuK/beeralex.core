@@ -1,6 +1,5 @@
 <?php
 
-use Beeralex\Catalog\Service\CatalogService;
 use Beeralex\Core\Service\ViteService;
 use Beeralex\Core\Config\Config;
 use Beeralex\Core\Config\ConfigLoaderFactory;
@@ -15,6 +14,7 @@ use Beeralex\Core\Logger\LoggerFactoryContract;
 use Beeralex\Core\Model\SectionTableFactory;
 use Beeralex\Core\Repository\LocationRepository;
 use Beeralex\Core\Service\Api\ClientService;
+use Beeralex\Core\Service\CatalogService;
 use Beeralex\Core\Service\ControllerService;
 use Beeralex\Core\Service\FileService;
 use Beeralex\Core\Service\FuserService;

@@ -11,9 +11,6 @@ use Bitrix\Iblock\PropertyTable;
 
 class IblockService
 {
-    protected static array $iblockCodeIdMap = [];
-    protected static array $entityMap = [];
-
     public function __construct() 
     {
         Loader::includeModule('iblock');
@@ -24,21 +21,19 @@ class IblockService
      */
     public function getIblockIdByCode(string $iblockCode): int
     {
-        if (!isset(static::$iblockCodeIdMap[$iblockCode])) {
-            $id = IblockTable::getList([
-                'select' => ['ID'],
-                'filter' => ['CODE' => $iblockCode],
-                'cache' => ['ttl' => 86400]
-            ])->fetch()['ID'];
+        $row = IblockTable::query()
+            ->setSelect(['ID'])
+            ->where('CODE', $iblockCode)
+            ->setCacheTtl(86400)
+            ->exec()
+            ->fetch();
 
-            if (!$id) {
-                throw new \Exception("Iblock with code {$iblockCode} not found");
-            }
-
-            static::$iblockCodeIdMap[$iblockCode] = $id;
+        $id = $row['ID'] ?? null;
+        if (!$id) {
+            throw new \Exception("Iblock with code {$iblockCode} not found");
         }
 
-        return static::$iblockCodeIdMap[$iblockCode];
+        return (int)$id;
     }
 
     /**
@@ -53,30 +48,21 @@ class IblockService
 
     /**
      * Получить сущность для работы с элементами инфоблока по его id, так же должен быть задан сивольный код api
-     * @param int $iblockId
      * @throws \Exception
      * @return \Bitrix\Iblock\ORM\CommonElementTable|string
      */
     public function getElementApiTable(int $iblockId)
     {
-        if (!isset(static::$entityMap[$iblockId])) {
-            Loader::includeModule('iblock');
-            $entity = Iblock::wakeUp($iblockId)->getEntityDataClass();
-            if (!$entity) {
-                throw new \Exception("entity with not found in iblock {$iblockId}");
-            }
-            static::$entityMap[$iblockId] = $entity;
+        Loader::includeModule('iblock');
+        $entity = Iblock::wakeUp($iblockId)->getEntityDataClass();
+        if (!$entity) {
+            throw new \Exception("entity with not found in iblock {$iblockId}");
         }
 
-        return static::$entityMap[$iblockId];
+        return $entity;
     }
 
     /**
-     * @param $code
-     * @param $iblockId
-     *
-     * @return int
-     *
      * @throws \InvalidArgumentException
      */
     public function getIblockPropIdByCode(string $code, int $iblockId): int
@@ -91,12 +77,6 @@ class IblockService
         return $propId ? (int)$propId : 0;
     }
 
-    /**
-     * @param int   $propId
-     * @param array $xmlIds
-     *
-     * @return array [ xmlId => [id => valueId] ]
-     */
     public function getEnumValues(int $propId, array $xmlIds = []): array
     {
         $dbRes = \CIBlockPropertyEnum::GetList([], [
@@ -114,9 +94,6 @@ class IblockService
         return $values;
     }
 
-    /**
-     * Добавить склад/количество (STORE_PRODUCT) в запрос
-     */
     public function addSectionModelToQuery(Iblock|int $iblock, Query $query): Query
     {
         $sectionModel = service(SectionTableFactory::class)->compileEntityByIblock($iblock);
@@ -127,5 +104,35 @@ class IblockService
         ]);
 
         return $query;
+    }
+
+    public function addPropertyModelToQuery(Query $query): Query
+    {
+        $query->registerRuntimeField('IBLOCK_MODEL_PROPERTY', [
+            'data_type' => PropertyTable::class,
+            'reference' => ["=this.ID" => 'ref.IBLOCK_ID'],
+            'join_type' => 'LEFT',
+        ]);
+
+        return $query;
+    }
+
+    /**
+     * Получает сущность справочника по ID свойства инфоблока
+     */
+    public function getTableEntityByPropertyId(int $propertyId)
+    {
+        $data = PropertyTable::query()
+            ->setSelect(['USER_TYPE_SETTINGS_LIST'])
+            ->where('ID', $propertyId)
+            ->setCacheTtl(86400)
+            ->exec()
+            ->fetch();
+        
+        if (!$data['USER_TYPE_SETTINGS_LIST']['TABLE_NAME']) {
+            throw new \Exception("Property with ID {$propertyId} is not a directory");
+        }
+
+        return service(HlblockService::class)->getHlBlockByTableName($data['USER_TYPE_SETTINGS_LIST']['TABLE_NAME']);
     }
 }

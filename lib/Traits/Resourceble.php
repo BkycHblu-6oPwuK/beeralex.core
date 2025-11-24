@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Beeralex\Core\Traits;
 
 trait Resourceble
@@ -64,11 +66,27 @@ trait Resourceble
 
     public function jsonSerialize(): mixed
     {
-        return $this->resource;
+        return $this->toArray();
     }
 
     public function getIterator(): \Traversable
     {
         return new \ArrayIterator($this->resource);
+    }
+
+    public function getString(string $key): ?string
+    {
+        $value = $this->__get($key) ?? null;
+        return is_string($value) ? $value : null;
+    }
+
+    public function toArray(): array
+    {
+        return $this->resource;
+    }
+
+    public function isEmpty(): bool
+    {
+        return empty($this->resource);
     }
 }

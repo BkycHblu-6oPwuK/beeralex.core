@@ -7,9 +7,6 @@ use Bitrix\Main\Loader;
 
 class HlblockService
 {
-    protected static array $hlblockCodeIdMap = [];
-    protected static array $hlblockClassMap = [];
-
     public function __construct() 
     {
         Loader::includeModule("highloadblock");
@@ -24,21 +21,18 @@ class HlblockService
      */
     public function getHlblockIdByName(string $hlblockName): int
     {
-        if (!isset(static::$hlblockCodeIdMap[$hlblockName])) {
-            $row = HighloadBlockTable::getList([
-                'select' => ['ID'],
-                'filter' => ['NAME' => $hlblockName],
-                'cache'  => ['ttl' => 86400],
-            ])->fetch();
+        $row = HighloadBlockTable::query()
+            ->setSelect(['ID'])
+            ->where('NAME', $hlblockName)
+            ->setCacheTtl(86400)
+            ->exec()
+            ->fetch();
 
-            if (!$row) {
-                throw new \Exception("HL-блок с именем '{$hlblockName}' не найден");
-            }
-
-            static::$hlblockCodeIdMap[$hlblockName] = (int)$row['ID'];
+        if (!$row) {
+            throw new \Exception("HL-блок с именем '{$hlblockName}' не найден");
         }
 
-        return static::$hlblockCodeIdMap[$hlblockName];
+        return (int)$row['ID'];
     }
 
     /**
@@ -50,23 +44,41 @@ class HlblockService
      */
     public function getHlblockById(int $hlblockId): string
     {
-        if (!isset(static::$hlblockClassMap[$hlblockId])) {
+        $hlblock = HighloadBlockTable::getByPrimary($hlblockId, [
+            'cache' => ['ttl' => 86400]
+        ])->fetch();
 
-            $hlblock = HighloadBlockTable::getByPrimary($hlblockId, [
-                'cache' => ['ttl' => 86400]
-            ])->fetch();
-
-            if (!$hlblock) {
-                throw new \Exception("HL-блок с ID {$hlblockId} не найден");
-            }
-
-            $entity = HighloadBlockTable::compileEntity($hlblock);
-            $dataClass = $entity->getDataClass();
-
-            static::$hlblockClassMap[$hlblockId] = $dataClass;
+        if (!$hlblock) {
+            throw new \Exception("HL-блок с ID {$hlblockId} не найден");
         }
 
-        return static::$hlblockClassMap[$hlblockId];
+        $entity = HighloadBlockTable::compileEntity($hlblock);
+        $dataClass = $entity->getDataClass();
+
+        return $dataClass;
+    }
+
+    /**
+     * Получает класс хайлоадблока по его имени таблицы
+     *
+     * @param string $tableName
+     * @return string|\Bitrix\Main\ORM\Data\DataManager
+     * @throws \Exception
+     */
+    public function getHlBlockByTableName(string $tableName): string
+    {
+        $hlblock = HighloadBlockTable::query()
+            ->setSelect(['ID'])
+            ->where('TABLE_NAME', $tableName)
+            ->setCacheTtl(86400)
+            ->exec()
+            ->fetch();
+
+        if (!$hlblock) {
+            throw new \Exception("HL-блок с таблицей '{$tableName}' не найден");
+        }
+
+        return $this->getHlblockById((int)$hlblock['ID']);
     }
 
     /**
@@ -78,11 +90,7 @@ class HlblockService
      */
     public function getHlblockByName(string $hlblockName): string
     {
-        if (!isset(static::$hlblockClassMap[$hlblockName])) {
-            $hlblockId = $this->getHlblockIdByName($hlblockName);
-            static::$hlblockClassMap[$hlblockName] = $this->getHlblockById($hlblockId);
-        }
-
-        return static::$hlblockClassMap[$hlblockName];
+        $hlblockId = $this->getHlblockIdByName($hlblockName);
+        return $this->getHlblockById($hlblockId);
     }
 }

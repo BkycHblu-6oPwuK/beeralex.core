@@ -8,12 +8,12 @@ abstract class Resource implements ResourceContract, \JsonSerializable, \ArrayAc
 {
     use Resourceble;
 
-    private function __construct(array $data)
+    public final function __construct(array $data)
     {
         $this->resource = $data;
     }
 
-    public final static function make(array $data) : static
+    public static function make(array $data) : static
     {
         return new static($data);
     }

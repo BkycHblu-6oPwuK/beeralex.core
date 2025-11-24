@@ -13,7 +13,7 @@ class Repository extends AbstractRepository
             ->setFilter($filter)
             ->setOrder($order);
 
-        return $this->useDecompose ? $this->queryService->decomposeToArray($query) : $query->fetchAll();
+        return $this->useDecompose ? $this->queryService->fetchGroupedEntities($query) : $query->fetchAll();
     }
 
     public function one(array $filter = [], array $select = ['*']): ?array
@@ -22,7 +22,7 @@ class Repository extends AbstractRepository
             ->setSelect($select)
             ->setFilter($filter)
             ->setLimit(1);
-        $result = $this->useDecompose ? $this->queryService->decomposeToArray($query)[0] : $query->fetch();
+        $result = $this->useDecompose ? $this->queryService->fetchGroupedEntities($query)[0] : $query->fetch();
         return empty($result) ? null : $result;
     }
 

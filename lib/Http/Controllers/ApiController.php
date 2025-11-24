@@ -41,7 +41,7 @@ abstract class ApiController extends Controller
             }
 
             /**
-             * @var string|\Beeralex\Core\Http\Request\AbstractRequestDto
+             * @var string|\Beeralex\Core\Http\Request\AbstractRequestDto|\Beeralex\Core\Http\Resources\Resource $className
              */
             $className = $type->getName();
             if (is_subclass_of($className, \Beeralex\Core\Http\Request\AbstractRequestDto::class)) {
@@ -53,6 +53,10 @@ abstract class ApiController extends Controller
                     return false;
                 }
                 $arguments[$param->getName()] = $dto;
+                break;
+            } elseif(is_subclass_of($className, \Beeralex\Core\Http\Resources\Resource::class)) {
+                $resource = $className::make($data);
+                $arguments[$param->getName()] = $resource;
                 break;
             }
         }
