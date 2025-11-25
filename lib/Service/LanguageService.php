@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Beeralex\Core\Service;
 
 class LanguageService
@@ -20,5 +22,65 @@ class LanguageService
         }
 
         return (string)$variants[2];
+    }
+
+    public function transliterate(string $str, string $lang = 'en', array $params = [])
+    {
+        if ($lang === 'en' && LANGUAGE_ID === 'ru') {
+            $translit = [
+                'q' => 'й',
+                'w' => 'ц',
+                'e' => 'у',
+                'r' => 'к',
+                't' => 'е',
+                'y' => 'н',
+                'u' => 'г',
+                'i' => 'ш',
+                'o' => 'щ',
+                'p' => 'з',
+                '[' => 'х',
+                ']' => 'ъ',
+                'a' => 'ф',
+                's' => 'ы',
+                'd' => 'в',
+                'f' => 'а',
+                'g' => 'п',
+                'h' => 'р',
+                'j' => 'о',
+                'k' => 'л',
+                'l' => 'д',
+                ';' => 'ж',
+                "'" => 'э',
+                'z' => 'я',
+                'x' => 'ч',
+                'c' => 'с',
+                'v' => 'м',
+                'b' => 'и',
+                'n' => 'т',
+                'm' => 'ь',
+                ',' => 'б',
+                '.' => 'ю',
+                '/' => '.',
+                ' ' => ' '
+            ];
+
+            $transliterated = '';
+            $length = strlen($str);
+            for ($i = 0; $i < $length; $i++) {
+                $char = strtolower($str[$i]);
+                if (isset($translit[$char])) {
+                    if ($str[$i] === strtoupper($str[$i])) {
+                        $transliterated .= strtoupper($translit[$char]);
+                    } else {
+                        $transliterated .= $translit[$char];
+                    }
+                } else {
+                    $transliterated .= $char;
+                }
+            }
+
+            return $transliterated;
+        }
+        return \CUtil::translit($str, $lang, $params);
     }
 }

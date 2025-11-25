@@ -11,8 +11,8 @@ interface RepositoryContract
 {
     /** @return Query<T> */
     public function query(): Query;
-    public function all(array $filter = [], array $select = ['*'], array $order = []): object|array;
-    public function one(array $filter = [], array $select = ['*']): object|null|array;
+    public function all(array $filter = [], array $select = ['*'], array $order = [], int $cacheTtl = 0, bool $cacheJoins = false): object|array;
+    public function one(array $filter = [], array $select = ['*'], int $cacheTtl = 0, bool $cacheJoins = false): object|null|array;
     public function getById(int $id, array $select = ['*']): object|null|array;
     public function add(array|object $data): int;
     public function update(int $id, array|object $data): void;

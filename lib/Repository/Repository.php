@@ -6,22 +6,26 @@ use Bitrix\Main\SystemException;
 
 class Repository extends AbstractRepository
 {
-    public function all(array $filter = [], array $select = ['*'], array $order = []): array
+    public function all(array $filter = [], array $select = ['*'], array $order = [], int $cacheTtl = 0, bool $cacheJoins = false): array
     {
         $query = $this->query()
             ->setSelect($select)
             ->setFilter($filter)
-            ->setOrder($order);
+            ->setOrder($order)
+            ->setCacheTtl($cacheTtl)
+            ->setCacheJoins($cacheJoins);
 
         return $this->useDecompose ? $this->queryService->fetchGroupedEntities($query) : $query->fetchAll();
     }
 
-    public function one(array $filter = [], array $select = ['*']): ?array
+    public function one(array $filter = [], array $select = ['*'], int $cacheTtl = 0, bool $cacheJoins = false): ?array
     {
         $query = $this->query()
             ->setSelect($select)
             ->setFilter($filter)
-            ->setLimit(1);
+            ->setLimit(1)
+            ->setCacheTtl($cacheTtl)
+            ->setCacheJoins($cacheJoins);
         $result = $this->useDecompose ? $this->queryService->fetchGroupedEntities($query)[0] : $query->fetch();
         return empty($result) ? null : $result;
     }
