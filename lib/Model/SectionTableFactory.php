@@ -11,7 +11,12 @@ use Bitrix\Main\UserFieldTable;
  */
 class SectionTableFactory
 {
-    protected static $entityInstance = [];
+    protected static array $entityInstance = [];
+
+    public function __construct()
+    {
+        Loader::requireModule('iblock');
+    }
 
     /**
      * @param int|Iblock $iblock Iblock object, or ID
@@ -20,7 +25,6 @@ class SectionTableFactory
      */
     public function compileEntityByIblock(Iblock|int $iblock)
     {
-        Loader::requireModule('iblock');
         $iblockId = $this->resolveIblockId($iblock);
 
         if ($iblockId <= 0) {

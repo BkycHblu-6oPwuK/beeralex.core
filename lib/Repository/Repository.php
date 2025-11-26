@@ -13,7 +13,7 @@ class Repository extends AbstractRepository
             ->setFilter($filter)
             ->setOrder($order)
             ->setCacheTtl($cacheTtl)
-            ->setCacheJoins($cacheJoins);
+            ->cacheJoins($cacheJoins);
 
         return $this->useDecompose ? $this->queryService->fetchGroupedEntities($query) : $query->fetchAll();
     }
@@ -25,7 +25,7 @@ class Repository extends AbstractRepository
             ->setFilter($filter)
             ->setLimit(1)
             ->setCacheTtl($cacheTtl)
-            ->setCacheJoins($cacheJoins);
+            ->cacheJoins($cacheJoins);
         $result = $this->useDecompose ? $this->queryService->fetchGroupedEntities($query)[0] : $query->fetch();
         return empty($result) ? null : $result;
     }

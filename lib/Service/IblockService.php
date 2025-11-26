@@ -53,7 +53,6 @@ class IblockService
      */
     public function getElementApiTable(int $iblockId)
     {
-        Loader::includeModule('iblock');
         $entity = Iblock::wakeUp($iblockId)->getEntityDataClass();
         if (!$entity) {
             throw new \Exception("entity with not found in iblock {$iblockId}");

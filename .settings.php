@@ -25,15 +25,24 @@ use Beeralex\Core\Service\LocationService;
 use Beeralex\Core\Service\PaginationService;
 use Beeralex\Core\Service\PathService;
 use Beeralex\Core\Service\QueryService;
+use Beeralex\Core\Service\UrlService;
 use Beeralex\Core\Service\WebService;
-use Beeralex\User\Services\UserService;
+use Beeralex\Core\Service\UserService;
 
 return [
+    'url_remove_parts' => [
+        'value' => [
+            'api',
+            'v1',
+        ]
+    ],
     'services' => [
         'value' => [
             LoggerFactoryContract::class => [
                 'constructor' => static function () {
-                    return new FileLoggerFactory($_SERVER['DOCUMENT_ROOT'] . '/local/logs');
+                    return new FileLoggerFactory(
+                        baseDir: $_SERVER['DOCUMENT_ROOT'] . '/local/logs'
+                    );
                 },
             ],
             ConfigLoaderFactory::class => [
@@ -77,7 +86,9 @@ return [
             ],
             LocationService::class => [
                 'constructor' => static function () {
-                    return new LocationService(service(LocationRepository::class));
+                    return new LocationService(
+                        locationRepository: service(LocationRepository::class)
+                    );
                 }
             ],
             PaginationService::class => [
@@ -97,7 +108,9 @@ return [
             ],
             ViteService::class => [
                 'constructor' => static function () {
-                    return new ViteService(service(Config::class));
+                    return new ViteService(
+                        config: service(Config::class)
+                    );
                 }
             ],
             WebService::class => [
@@ -106,14 +119,21 @@ return [
             ClientService::class => [
                 'className' => ClientService::class
             ],
+            UrlService::class => [
+                'className' => UrlService::class
+            ],
             BitrixToPsrRequest::class => [
                 'constructor' => static function () {
-                    return new BitrixToPsrRequest(service(WebService::class));
+                    return new BitrixToPsrRequest(
+                        webService: service(WebService::class)
+                    );
                 }
             ],
             BitrixToPsrResponse::class => [
                 'constructor' => static function () {
-                    return new BitrixToPsrResponse(service(WebService::class));
+                    return new BitrixToPsrResponse(
+                        webService: service(WebService::class)
+                    );
                 }
             ],
             PsrToBitrixRequest::class => [

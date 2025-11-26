@@ -16,7 +16,7 @@ class IblockRepository extends Repository implements CompiledEntityRepositoryCon
             $iblockCodeOrId = $iblockService->getIblockIdByCode($iblockCodeOrId);
         }
 
-        $this->entityId = (int)$iblockCodeOrId;
+        $this->entityId = $iblockCodeOrId;
 
         parent::__construct($iblockService->getElementApiTable($iblockCodeOrId), true);
     }
