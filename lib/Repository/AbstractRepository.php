@@ -13,9 +13,9 @@ use Bitrix\Main\SystemException;
 abstract class AbstractRepository implements RepositoryContract
 {
     /** @var class-string<T> */
-    public readonly string $entityClass;
-    public readonly QueryService $queryService;
-    public bool $useDecompose;
+    protected readonly string $entityClass;
+    protected readonly QueryService $queryService;
+    protected bool $useDecompose;
 
     /**
      * @param class-string<T> $entityClass
@@ -28,6 +28,17 @@ abstract class AbstractRepository implements RepositoryContract
         $this->entityClass = $entityClass;
         $this->useDecompose = $useDecompose;
         $this->queryService = service(QueryService::class);
+    }
+
+    public function useDecompose(bool $useDecompose = true): static
+    {
+        $this->useDecompose = $useDecompose;
+        return $this;
+    }
+
+    public function getEntityClass(): string
+    {
+        return $this->entityClass;
     }
 
     public function query(): Query

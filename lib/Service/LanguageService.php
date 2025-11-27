@@ -24,7 +24,7 @@ class LanguageService
         return (string)$variants[2];
     }
 
-    public function transliterate(string $str, string $lang = 'en', array $params = [])
+    public function transliterate(string $str, string $lang = 'en', array $params = []): string
     {
         if ($lang === 'en' && LANGUAGE_ID === 'ru') {
             $translit = [

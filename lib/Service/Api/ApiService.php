@@ -91,7 +91,7 @@ abstract class ApiService
     public function log(string $text, int $traceDepth = 6, bool $showArgs = false): void
     {
         if ($this->logsEnabled()) {
-            \AddMessage2Log($text, $this->options->moduleId, $traceDepth, $showArgs);
+            coreLog($text, $traceDepth, $showArgs);
         }
     }
 

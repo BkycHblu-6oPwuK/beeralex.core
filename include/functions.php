@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+
 if (!function_exists('firstNotEmpty')) {
     /**
      * Возвращает первое непустое значение или значение по умолчанию
@@ -56,5 +57,12 @@ if (!function_exists('service')) {
     function service(string $class)
     {
         return \Bitrix\Main\DI\ServiceLocator::getInstance()->get($class);
+    }
+}
+
+if (!function_exists('coreLog')) {
+    function coreLog(string $message, int $traceDepth = 6, bool $showArgs = false): void
+    {
+        \AddMessage2Log($message, service(\Beeralex\Core\Config\Config::class)->getModuleId(), $traceDepth, $showArgs);
     }
 }

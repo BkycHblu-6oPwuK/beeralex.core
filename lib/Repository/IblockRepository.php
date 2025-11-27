@@ -5,9 +5,10 @@ namespace Beeralex\Core\Repository;
 use Beeralex\Core\Service\IblockService;
 use Bitrix\Main\SystemException;
 
-class IblockRepository extends Repository implements CompiledEntityRepositoryContract
+class IblockRepository extends Repository implements IblockRepositoryContract
 {
     public readonly int $entityId;
+    protected ?IblockSectionRepository $sectionRepository = null;
 
     public function __construct(string|int $iblockCodeOrId)
     {
@@ -19,6 +20,21 @@ class IblockRepository extends Repository implements CompiledEntityRepositoryCon
         $this->entityId = $iblockCodeOrId;
 
         parent::__construct($iblockService->getElementApiTable($iblockCodeOrId), true);
+    }
+
+    /**
+     * Получение репозитория разделов инфоблока
+     * @param callable|null $factory Фабрика для создания репозитория разделов
+     */
+    public function getIblockSectionRepository(?callable $factory = null) : IblockSectionRepository
+    {
+        if ($factory !== null) {
+            return $factory($this->entityId);
+        }
+        if ($this->sectionRepository === null) {
+            $this->sectionRepository = new IblockSectionRepository($this->entityId);
+        }
+        return $this->sectionRepository;
     }
 
     /**
