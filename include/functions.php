@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 if (!function_exists('firstNotEmpty')) {
@@ -64,5 +65,25 @@ if (!function_exists('coreLog')) {
     function coreLog(string $message, int $traceDepth = 6, bool $showArgs = false): void
     {
         \AddMessage2Log($message, service(\Beeralex\Core\Config\Config::class)->getModuleId(), $traceDepth, $showArgs);
+    }
+}
+
+if (!function_exists('isCli')) {
+    /**
+     * Проверяет, что скрипт запущен из-под cron
+     *
+     * @return bool
+     */
+    function isCli(): bool
+    {
+        if (defined('BX_CRONTAB') && BX_CRONTAB === true) {
+            return true;
+        }
+
+        if (php_sapi_name() === 'cli') {
+            return true;
+        }
+
+        return false;
     }
 }
