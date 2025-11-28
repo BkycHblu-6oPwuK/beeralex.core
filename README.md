@@ -1,10 +1,25 @@
-# beeralex.core
+# Модуль Core (beeralex.core)
 
-Набор инструментов и базовых классов для разработки Bitrix-модулей с современным подходом к архитектуре.
+Базовый модуль для разработки Bitrix-приложений с современным подходом к архитектуре. Предоставляет инструменты для работы с инфоблоками, репозиториями, сервисами, контроллерами и многое другое.
 
-## Установка
+[![PHP](https://img.shields.io/badge/PHP-8.1+-blue.svg)](https://www.php.net/)
+[![Bitrix](https://img.shields.io/badge/Bitrix-14.0.0+-orange.svg)](https://www.bitrix24.ru/)
 
-Добавьте в `composer.json` настройку для установки в `local/modules`:
+## Возможности
+
+- 🎯 **Dependency Injection** - Управление зависимостями через DI-контейнер
+- 📦 **Repository Pattern** - Удобная работа с данными (инфоблоки, хайлоад-блоки)
+- ⚙️ **Сервисы** - Готовые сервисы для типовых задач
+- 🎮 **Контроллеры** - Базовые контроллеры с автовалидацией
+- 🔧 **Конфигурация** - Типобезопасная система настроек
+- 📝 **Logger** - PSR-3 совместимое логирование
+- 🚀 **Vite Integration** - Интеграция с современным фронтендом
+
+## Быстрый старт
+
+### Установка
+
+Добавьте в `composer.json` настройку для установки в `local/modules` (или в bitrix, это на ваше усмотрение):
 
 ```json
 {
@@ -22,271 +37,191 @@
 composer require beeralex/beeralex.core
 ```
 
-Подключите модуль в `init.php`:
+### Активация
+
+В админке: `Marketplace -> Установленные решения -> Установить`
+
+И в `/local/php_interface/init.php`:
 
 ```php
-Bitrix\Main\Loader::includeModule('beeralex.core');
+\Bitrix\Main\Loader::includeModule('beeralex.core');
 ```
 
----
-
-## Основные возможности
-
-### 🔧 Настройки модулей
-- Декларативная схема настроек через `Schema` и `SchemaTab`
-- Поддержка пользовательских настроек из `local/config/`
-- Типизированный доступ через `AbstractOptions`
-- [Подробная документация](docs/module-options.md)
-
-### 📦 Репозитории
-- `AbstractRepository` - базовый класс с дженериками
-- `IblockRepository` - для работы с инфоблоками
-- `HighloadRepository` - для highload-блоков
-- Поддержка декомпозиции запросов
-- [Документация по репозиториям](lib/Repository/README.md)
-
-### 🌐 API сервисы
-- `ApiService` - базовый класс с кэшированием
-- `ClientService` - HTTP-клиент с настройкой
-- Типизация через дженерики для Options и Client
-- Автоматическая обработка ошибок и логирование
-
-### 🔄 HTTP адаптеры
-- Bitrix ↔ PSR-7 конвертеры
-- `BitrixToPsrRequest` / `BitrixToPsrResponse`
-- `PsrToBitrixRequest` / `PsrToBitrixResponse`
-- [Документация по контроллерам](lib/Http/Controllers/README.md)
-
-### 📝 Логирование
-- PSR-совместимый `FileLogger`
-- `LoggerFactoryContract` для создания логгеров
-- Автоматическое логирование в API сервисах
-
-### ⚡ Vite интеграция
-- `ViteService` для работы с Vite манифестом
-- Поддержка SSR режима
-- Hot Module Replacement в dev режиме
-
-### 🛠️ Сервисы
-- `QueryService` - построитель ORM запросов
-- `IblockService` - работа с инфоблоками
-- `HlblockService` - работа с highload блоками
-- `FileService` - работа с файлами
-- `PaginationService` - пагинация
-- `LocationService` - работа с локациями
-
----
-
-## Быстрый старт
-
-### Создание модуля с настройками
-
-1. Создайте `options_schema.php`:
-```php
-<?php
-use Beeralex\Core\Config\Module\Schema\Schema;
-
-return Schema::make()
-    ->tab('general', 'Настройки', 'Основные параметры', function ($tab) {
-        $tab->input('api_key', 'API ключ', 'Key')
-            ->checkbox('logs_enable', 'Включить логи', 'Логи');
-    });
-```
-
-2. Создайте класс настроек:
-```php
-<?php
-namespace YourVendor\YourModule;
-
-use Beeralex\Core\Config\AbstractOptions;
-
-final class Options extends AbstractOptions
-{
-    public readonly string $apiKey;
-    public readonly bool $logsEnable;
-
-    protected function mapOptions(array $options): void
-    {
-        $this->apiKey = $options['api_key'] ?? '';
-        $this->logsEnable = ($options['logs_enable'] ?? '') === 'Y';
-    }
-
-    public function getModuleId(): string
-    {
-        return 'yourvendor.yourmodule';
-    }
-}
-```
-
-3. Зарегистрируйте в `.settings.php`:
-```php
-<?php
-return [
-    'services' => [
-        'value' => [
-            YourVendor\YourModule\Options::class => [
-                'className' => YourVendor\YourModule\Options::class
-            ],
-        ],
-    ],
-];
-```
-
-4. Используйте:
-```php
-$options = service(YourVendor\YourModule\Options::class);
-echo $options->apiKey;
-```
-
-### Создание API сервиса
+### Первый код
 
 ```php
-<?php
-namespace YourVendor\YourModule\Services;
-
-use Beeralex\Core\Service\Api\ApiService as CoreApiService;
-use YourVendor\YourModule\Options;
-
-/**
- * @property-read Options $options
- * @property-read ClientService $clientService
- */
-class ApiService extends CoreApiService
-{
-    public function __construct()
-    {
-        parent::__construct(
-            service(Options::class),
-            service(ClientService::class)
-        );
-    }
-
-    public function getData(): array
-    {
-        $uri = new \Bitrix\Main\Web\Uri('https://api.example.com/data');
-        return $this->get($uri);
-    }
-}
-```
-
-### Создание репозитория
-
-```php
-<?php
-namespace YourVendor\YourModule\Repository;
-
 use Beeralex\Core\Repository\IblockRepository;
-use YourVendor\YourModule\Entity\ProductTable;
+use Beeralex\Core\Service\UserService;
 
-class ProductRepository extends IblockRepository
-{
-    public function __construct()
-    {
-        parent::__construct(ProductTable::class);
-    }
+// Работа с репозиториями
+$newsRepo = new IblockRepository('news');
+$news = $newsRepo->getList(['ACTIVE' => 'Y']);
 
-    public function findActive(): array
-    {
-        return $this->query()
-            ->where('ACTIVE', 'Y')
-            ->fetchAll();
-    }
-}
+// Использование сервисов
+$userService = service(UserService::class);
+$password = $userService->generatePassword([2]);
 ```
 
----
+## Функции-хелперы
 
-## Хелперы
+Модуль предоставляет глобальные функции-помощники для упрощения работы:
 
 ### service()
-Получение сервиса из DI контейнера с поддержкой дженериков:
+
+Получение сервиса из DI-контейнера с поддержкой типизации:
 
 ```php
-/**
- * @template T
- * @param class-string<T> $class
- * @return T
- */
-function service(string $class)
+// Автоматическое определение типа благодаря @template
+$userService = service(UserService::class);
+$logger = service(LoggerFactoryContract::class);
 ```
 
 ### firstNotEmpty()
-Возвращает первое непустое значение:
+
+Возвращает первое непустое значение или значение по умолчанию:
 
 ```php
 $value = firstNotEmpty('default', $var1, $var2, $var3);
+// Вернет первое непустое из $var1, $var2, $var3 или 'default'
 ```
 
 ### toFile()
-Быстрое логирование в файл через PSR Logger:
+
+Быстрое логирование данных в файл (для отладки):
 
 ```php
-toFile(['debug' => $data, 'user' => $userId]);
+toFile($data); // Логирует в default.log
+toFile(['user_id' => 123, 'action' => 'login']); // Логирует массив
+```
+
+### coreLog()
+
+Логирование через встроенную систему Bitrix:
+
+```php
+coreLog('Сообщение об ошибке');
+coreLog('Детальная информация', 10, true); // С трассировкой и аргументами
 ```
 
 ### isLighthouse()
-Проверка на PageSpeed Insights:
+
+Определяет, является ли запрос от Google Lighthouse:
 
 ```php
 if (isLighthouse()) {
-    // Отключить тяжелые скрипты
+    // Специальная логика для аудита производительности
 }
 ```
 
 ### isImport()
-Проверка на обмен с 1С:
+
+Проверяет, идет ли обмен с 1С:
 
 ```php
 if (isImport()) {
-    // Специальная логика для импорта
+    // Логика для импорта из 1С
 }
 ```
-
----
 
 ## Документация
 
-- [Настройки модулей](docs/module-options.md) - создание схем настроек
-- [API сервисы](docs/api-services.md) - работа с внешними API
-- [Репозитории](docs/repositories.md) - работа с данными через ORM
-- [HTTP контроллеры](docs/controllers.md) - REST API
-- [Prefilters](docs/prefilters.md) - валидация запросов
-- [Resources](docs/resources.md) - форматирование ответов
+📚 **[Полная документация](./docs/README.md)**
 
----
+- [Dependency Injection](./docs/dependency-injection.md) - DI контейнер
+- [Репозитории](./docs/repositories.md) - Работа с данными
+- [Сервисы](./docs/services.md) - Все сервисы модуля
+- [Контроллеры](./docs/controllers.md) - HTTP контроллеры
+- [Конфигурация](./docs/configuration.md) - Система настроек
 
-## Роутинг
+## Примеры использования
 
-Для использования роутинга вместе с стандартным `urlrewrite.php`:
+### Repository Pattern
 
 ```php
-// В /bitrix/urlrewrite.php или local/urlrewrite.php
-include_once($_SERVER['DOCUMENT_ROOT'] . '/local/modules/beeralex.core/routing_index.php');
-if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/404.php')) {
-    include_once($_SERVER['DOCUMENT_ROOT'] . '/404.php');
+use Beeralex\Core\Repository\IblockRepository;
+
+$newsRepo = new IblockRepository('news');
+
+// Получение данных с фильтром и сортировкой
+$items = $newsRepo->getList(
+    ['ACTIVE' => 'Y'],
+    [
+        'select' => ['ID', 'NAME', 'DATE_CREATE'],
+        'order' => ['DATE_CREATE' => 'DESC'],
+        'limit' => 10
+    ]
+);
+
+// Добавление элемента
+$id = $newsRepo->add([
+    'NAME' => 'Новость',
+    'ACTIVE' => 'Y',
+    'PROPERTY_VALUES' => [
+        'CATEGORY' => 5
+    ]
+]);
+```
+
+### Dependency Injection
+
+```php
+use Beeralex\Core\Service\FileService;
+use Beeralex\Core\Service\PaginationService;
+
+// Получение сервисов из DI-контейнера
+$fileService = service(FileService::class);
+$paginationService = service(PaginationService::class);
+
+// Использование
+$fileService->includeFile('catalog.index', ['productId' => 123]);
+$pages = $paginationService->getPages(1, 10);
+```
+
+### API Controller
+
+```php
+use Beeralex\Core\Http\Controllers\ApiController;
+
+class ProductController extends ApiController
+{
+    public function listAction(int $limit = 10): array
+    {
+        $repository = new IblockRepository('catalog');
+        
+        return [
+            'items' => $repository->getList(
+                ['ACTIVE' => 'Y'],
+                ['limit' => $limit]
+            )
+        ];
+    }
 }
 ```
 
----
-
 ## Архитектура
 
-### DI контейнер
-Все сервисы регистрируются в `.settings.php` модуля и доступны через `service()`.
+```
+┌─────────────────────────────────┐
+│   Controllers (HTTP)            │  <- Обработка запросов
+├─────────────────────────────────┤
+│   Services (Business Logic)     │  <- Бизнес-логика
+├─────────────────────────────────┤
+│   Repositories (Data Access)    │  <- Доступ к данным
+├─────────────────────────────────┤
+│   Models/Entities               │  <- Данные
+└─────────────────────────────────┘
+```
 
-### Дженерики
-Активно используются PHPDoc дженерики для типизации:
-- `AbstractRepository<T of DataManager>`
-- `ApiService<T of AbstractOptions, U of ClientService>`
+## Требования
 
-### Трейты
-- `Cacheable` - кэширование методов
-- `Resourceble` - преобразование в JSON/массив
-- `PathNormalizerTrait` - нормализация путей
-- `TableManagerTrait` - работа с ORM таблицами
-
----
+- PHP >= 8.1
+- 1С-Битрикс >= 14.0.0
+- Composer
 
 ## Лицензия
 
 MIT
+
+## Автор
+
+Alexandr Belotsitsko (sanyabelyy020@gmail.com)

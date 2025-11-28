@@ -1,457 +1,677 @@
-# Репозитории
+# Репозитории (Repositories)
 
-Система репозиториев для работы с Bitrix ORM с поддержкой дженериков, декомпозиции запросов и типизации.
+Репозитории предоставляют удобный API для работы с данными Bitrix (инфоблоки, хайлоад-блоки, разделы). Они инкапсулируют логику доступа к данным и предоставляют чистый интерфейс для работы с ними.
 
-## Иерархия классов
+## Содержание
+
+- [Обзор](#обзор)
+- [Типы репозиториев](#типы-репозиториев)
+- [IblockRepository](#iblockrepository)
+- [IblockSectionRepository](#iblocksectionrepository)
+- [HighloadRepository](#highloadrepository)
+- [AbstractRepository](#abstractrepository)
+- [Создание собственных репозиториев](#создание-собственных-репозиториев)
+- [Продвинутые возможности](#продвинутые-возможности)
+
+## Обзор
+
+### Философия Repository Pattern
+
+Repository Pattern отделяет логику доступа к данным от бизнес-логики приложения:
 
 ```
-RepositoryContract (interface)
-    ↓
-AbstractRepository<T of DataManager>
-    ↓
-Repository
-    ↓
-├─ IblockRepository (CompiledEntityRepositoryContract)
-└─ HighloadRepository (CompiledEntityRepositoryContract)
+Controller/Service  →  Repository  →  Data Source (Bitrix ORM)
+   (Бизнес-логика)    (Доступ к данным)  (Хранилище данных)
 ```
 
----
+### Преимущества
 
-## AbstractRepository
+1. **Упрощение работы с данными** - Единый API для всех операций
+2. **Повторное использование** - Одна логика для всех контроллеров
+3. **Тестируемость** - Легко мокировать репозитории
+4. **Кеширование** - Встроенная поддержка кеширования
+5. **Безопасность типов** - Строгая типизация PHP 8.1+
 
-Базовый класс с дженериками для типобезопасной работы с ORM.
+## Типы репозиториев
+
+### Repository
+Базовый репозиторий для работы с любыми сущностями Bitrix ORM
+
+### IblockRepository
+Специализированный репозиторий для инфоблоков
+
+### IblockSectionRepository
+Репозиторий для разделов инфоблоков
+
+### HighloadRepository
+Репозиторий для хайлоад-блоков
+
+## IblockRepository
+
+Репозиторий для работы с элементами инфоблоков.
+
+### Создание репозитория
 
 ```php
-<?php
-namespace Beeralex\Core\Repository;
-
-/**
- * @template T of DataManager
- */
-abstract class AbstractRepository implements RepositoryContract
-{
-    /** @var class-string<T> */
-    public readonly string $entityClass;
-    public readonly QueryService $queryService;
-    public bool $useDecompose;
-
-    /**
-     * @param class-string<T> $entityClass
-     */
-    public function __construct(string $entityClass, bool $useDecompose = false)
-    {
-        if (!is_subclass_of($entityClass, DataManager::class)) {
-            throw new SystemException("Invalid entity class: {$entityClass}");
-        }
-        $this->entityClass = $entityClass;
-        $this->useDecompose = $useDecompose;
-        $this->queryService = service(QueryService::class);
-    }
-
-    public function query(): Query
-    {
-        return $this->entityClass::query();
-    }
-
-    public function getList(array $parameters = []): \Bitrix\Main\ORM\Query\Result
-    {
-        return $this->entityClass::getList($parameters);
-    }
-}
-```
-
----
-
-## Создание репозитория
-
-### 1. Простой репозиторий
-
-```php
-<?php
-namespace YourVendor\YourModule\Repository;
-
-use Beeralex\Core\Repository\AbstractRepository;
-use YourVendor\YourModule\Entity\UserTable;
-
-/**
- * @extends AbstractRepository<UserTable>
- */
-class UserRepository extends AbstractRepository
-{
-    public function __construct()
-    {
-        parent::__construct(UserTable::class);
-    }
-
-    public function findById(int $id): ?array
-    {
-        return $this->query()
-            ->where('ID', $id)
-            ->fetch();
-    }
-
-    public function findActive(): array
-    {
-        return $this->query()
-            ->where('ACTIVE', 'Y')
-            ->fetchAll();
-    }
-}
-```
-
-### 2. Репозиторий для инфоблоков
-
-```php
-<?php
-namespace YourVendor\YourModule\Repository;
-
 use Beeralex\Core\Repository\IblockRepository;
-use YourVendor\YourModule\Entity\ProductTable;
 
-class ProductRepository extends IblockRepository
-{
-    public function __construct()
-    {
-        parent::__construct(ProductTable::class);
-    }
+// По символьному коду
+$newsRepo = new IblockRepository('news');
 
-    public function findByCategory(int $categoryId): array
-    {
-        return $this->query()
-            ->where('IBLOCK_SECTION_ID', $categoryId)
-            ->where('ACTIVE', 'Y')
-            ->setOrder(['SORT' => 'ASC'])
-            ->fetchAll();
-    }
-
-    public function findWithPrice(): array
-    {
-        return $this->query()
-            ->registerRuntimeField('PRICE', [
-                'data_type' => PriceTable::class,
-                'reference' => ['=this.ID' => 'ref.PRODUCT_ID']
-            ])
-            ->where('PRICE.CATALOG_GROUP_ID', 1)
-            ->fetchAll();
-    }
-}
+// По ID
+$newsRepo = new IblockRepository(5);
 ```
-
-### 3. Репозиторий для Highload
-
-```php
-<?php
-namespace YourVendor\YourModule\Repository;
-
-use Beeralex\Core\Repository\HighloadRepository;
-use YourVendor\YourModule\Entity\SettingsTable;
-
-class SettingsRepository extends HighloadRepository
-{
-    public function __construct()
-    {
-        parent::__construct(SettingsTable::class);
-    }
-
-    public function findByKey(string $key): ?array
-    {
-        return $this->query()
-            ->where('UF_KEY', $key)
-            ->fetch();
-    }
-}
-```
-
----
-
-## Декомпозиция запросов
-
-Для оптимизации сложных запросов с множеством связей:
-
-```php
-public function __construct()
-{
-    parent::__construct(
-        entityClass: ProductTable::class,
-        useDecompose: true  // Включить декомпозицию
-    );
-}
-```
-
-Это автоматически разбивает один сложный запрос на несколько простых.
-
----
-
-## QueryService
-
-Сервис для построения запросов с дополнительными возможностями:
-
-```php
-$this->queryService->createQuery($this->entityClass)
-    ->setSelect(['ID', 'NAME', 'ACTIVE'])
-    ->setFilter(['ACTIVE' => 'Y'])
-    ->setOrder(['SORT' => 'ASC'])
-    ->setLimit(10)
-    ->setOffset(20);
-```
-
----
-
-## Примеры использования
 
 ### Базовые операции
 
+#### Получение списка элементов
+
 ```php
-<?php
-$repository = new ProductRepository();
+// Все элементы
+$items = $newsRepo->all();
 
-// Получить по ID
-$product = $repository->query()
-    ->where('ID', 123)
-    ->fetch();
+// С фильтром
+$items = $newsRepo->all([
+    'ACTIVE' => 'Y',
+    '>=DATE_CREATE' => '2025-01-01'
+]);
 
-// Список с фильтром
-$products = $repository->query()
-    ->whereIn('ID', [1, 2, 3])
-    ->where('ACTIVE', 'Y')
-    ->fetchAll();
+// С выбором полей
+$items = $newsRepo->all(
+    ['ACTIVE' => 'Y'],
+    ['ID', 'NAME', 'PREVIEW_TEXT']
+);
 
-// С сортировкой и лимитом
-$products = $repository->query()
-    ->setOrder(['SORT' => 'ASC', 'NAME' => 'ASC'])
-    ->setLimit(10)
-    ->fetchAll();
-
-// Подсчет
-$count = $repository->query()
-    ->where('ACTIVE', 'Y')
-    ->queryCountTotal();
+// С сортировкой
+$items = $newsRepo->all(
+    ['ACTIVE' => 'Y'],
+    ['ID', 'NAME'],
+    ['DATE_CREATE' => 'DESC']
+);
 ```
 
-### Работа со связями
+#### Получение одного элемента
 
 ```php
-public function findWithSections(): array
-{
-    return $this->query()
-        ->registerRuntimeField('SECTION', [
-            'data_type' => SectionTable::class,
-            'reference' => ['=this.IBLOCK_SECTION_ID' => 'ref.ID']
-        ])
-        ->setSelect(['*', 'SECTION'])
-        ->fetchAll();
+// По ID
+$item = $newsRepo->getById(123);
+
+// По условию
+$item = $newsRepo->one([
+    'CODE' => 'latest-news'
+]);
+
+// С выбором полей
+$item = $newsRepo->one(
+    ['CODE' => 'latest-news'],
+    ['ID', 'NAME', 'DETAIL_TEXT']
+);
+```
+
+#### Получение списка через getList (Bitrix ORM)
+
+```php
+// getList использует стандартные параметры Bitrix ORM
+$result = $newsRepo->getList([
+    'filter' => ['ACTIVE' => 'Y'],
+    'select' => ['ID', 'NAME', 'PROPERTY_CATEGORY'],
+    'limit' => 10,
+    'offset' => 0,
+    'order' => ['DATE_CREATE' => 'DESC'],
+    'cache' => ['ttl' => 3600]
+]);
+
+$items = $result->fetchAll();
+```
+
+### Операции записи
+
+#### Добавление элемента
+
+```php
+// Старый API (через CIBlockElement)
+$id = $newsRepo->add([
+    'NAME' => 'Новая новость',
+    'ACTIVE' => 'Y',
+    'PREVIEW_TEXT' => 'Краткое описание',
+    'PROPERTY_VALUES' => [
+        'CATEGORY' => 5,
+        'TAGS' => ['новость', 'важное']
+    ]
+]);
+
+// Новый API (через ORM) - если доступен
+$id = $newsRepo->save([
+    'NAME' => 'Новая новость',
+    'ACTIVE' => 'Y'
+]);
+```
+
+#### Обновление элемента
+
+```php
+// IblockRepository использует старый API (CIBlockElement)
+$newsRepo->update(123, [
+    'NAME' => 'Обновленное название',
+    'PROPERTY_VALUES' => [
+        'CATEGORY' => 6
+    ]
+]);
+
+// Базовый Repository использует ORM
+$baseRepo = new Repository(SomeTable::class);
+$baseRepo->update(123, [
+    'NAME' => 'Обновленное название'
+]);
+```
+
+#### Удаление элемента
+
+```php
+$newsRepo->delete(123);
+```
+
+#### Сохранение (добавление или обновление)
+
+```php
+// Добавление (если нет ID)
+$id = $newsRepo->save([
+    'NAME' => 'Новый элемент'
+]);
+
+// Обновление (если есть ID)
+$id = $newsRepo->save([
+    'ID' => 123,
+    'NAME' => 'Обновленный элемент'
+]);
+```
+
+### Работа с разделами
+
+```php
+// Получение репозитория разделов
+$sectionRepo = $newsRepo->getIblockSectionRepository();
+
+// Получение всех разделов
+$sections = $sectionRepo->all(['ACTIVE' => 'Y']);
+
+// Получение раздела по ID
+$section = $sectionRepo->getById(10);
+```
+
+### Примеры использования
+
+#### Пример 1: Получение активных новостей
+
+```php
+$newsRepo = new IblockRepository('news');
+
+$news = $newsRepo->getList(
+    ['ACTIVE' => 'Y'],
+    [
+        'select' => [
+            'ID',
+            'NAME',
+            'PREVIEW_TEXT',
+            'DATE_CREATE',
+            'PROPERTY_CATEGORY'
+        ],
+        'order' => ['DATE_CREATE' => 'DESC'],
+        'limit' => 10
+    ]
+);
+```
+
+#### Пример 2: Создание новости с проверкой
+
+```php
+$newsRepo = new IblockRepository('news');
+
+try {
+    $id = $newsRepo->add([
+        'NAME' => 'Важное объявление',
+        'ACTIVE' => 'Y',
+        'PREVIEW_TEXT' => 'Текст объявления',
+        'PROPERTY_VALUES' => [
+            'IMPORTANT' => 'Y',
+            'CATEGORY' => 5
+        ]
+    ]);
+    
+    echo "Создана новость с ID: $id";
+} catch (\Exception $e) {
+    echo "Ошибка: " . $e->getMessage();
 }
 ```
 
-### Сложные фильтры
+#### Пример 3: Массовое обновление
 
 ```php
-public function findByFilter(array $filter): array
+$newsRepo = new IblockRepository('news');
+
+$oldNews = $newsRepo->all([
+    '<DATE_CREATE' => date('Y-m-d', strtotime('-1 year'))
+]);
+
+foreach ($oldNews as $item) {
+    $newsRepo->update($item['ID'], [
+        'ACTIVE' => 'N'
+    ]);
+}
+```
+
+## IblockSectionRepository
+
+Репозиторий для работы с разделами инфоблоков.
+
+### Создание
+
+```php
+use Beeralex\Core\Repository\IblockSectionRepository;
+
+// По символьному коду инфоблока
+$sectionRepo = new IblockSectionRepository('catalog');
+
+// По ID инфоблока
+$sectionRepo = new IblockSectionRepository(7);
+
+// Через IblockRepository
+$catalogRepo = new IblockRepository('catalog');
+$sectionRepo = $catalogRepo->getIblockSectionRepository();
+```
+
+### Операции
+
+```php
+// Все разделы
+$sections = $sectionRepo->all();
+
+// Активные разделы первого уровня
+$sections = $sectionRepo->all([
+    'ACTIVE' => 'Y',
+    'DEPTH_LEVEL' => 1
+]);
+
+// Раздел по ID
+$section = $sectionRepo->getById(5);
+
+// Раздел по коду
+$section = $sectionRepo->one(['CODE' => 'electronics']);
+
+// Добавление раздела
+$id = $sectionRepo->add([
+    'NAME' => 'Новая категория',
+    'CODE' => 'new-category',
+    'ACTIVE' => 'Y',
+    'IBLOCK_SECTION_ID' => 10 // Родительский раздел
+]);
+
+// Обновление
+$sectionRepo->update(5, [
+    'NAME' => 'Обновленное название'
+]);
+
+// Удаление
+$sectionRepo->delete(5);
+```
+
+### Пример: Построение дерева разделов
+
+```php
+$sectionRepo = new IblockSectionRepository('catalog');
+
+$sections = $sectionRepo->all(
+    ['ACTIVE' => 'Y'],
+    ['ID', 'NAME', 'CODE', 'DEPTH_LEVEL', 'IBLOCK_SECTION_ID'],
+    ['LEFT_MARGIN' => 'ASC']
+);
+
+function buildTree(array $sections, ?int $parentId = null): array
 {
-    $query = $this->query();
-    
-    if (!empty($filter['NAME'])) {
-        $query->whereLike('NAME', '%' . $filter['NAME'] . '%');
+    $branch = [];
+    foreach ($sections as $section) {
+        if ($section['IBLOCK_SECTION_ID'] == $parentId) {
+            $children = buildTree($sections, $section['ID']);
+            if ($children) {
+                $section['CHILDREN'] = $children;
+            }
+            $branch[] = $section;
+        }
     }
-    
-    if (!empty($filter['PRICE_FROM'])) {
-        $query->where('PRICE', '>=', $filter['PRICE_FROM']);
-    }
-    
-    if (!empty($filter['PRICE_TO'])) {
-        $query->where('PRICE', '<=', $filter['PRICE_TO']);
-    }
-    
-    return $query->fetchAll();
+    return $branch;
 }
+
+$tree = buildTree($sections);
 ```
 
-### Пагинация
+## HighloadRepository
+
+Репозиторий для работы с хайлоад-блоками.
+
+### Создание
 
 ```php
-public function findPaginated(int $page = 1, int $perPage = 20): array
-{
-    $offset = ($page - 1) * $perPage;
-    
-    return $this->query()
-        ->setLimit($perPage)
-        ->setOffset($offset)
-        ->fetchAll();
-}
+use Beeralex\Core\Repository\HighloadRepository;
 
-public function getTotalCount(): int
-{
-    return $this->query()->queryCountTotal();
-}
+// По названию хайлоад-блока
+$settingsRepo = new HighloadRepository('Settings');
+
+// По ID
+$settingsRepo = new HighloadRepository(3);
 ```
 
----
+### Операции
 
-## Интерфейсы
-
-### RepositoryContract
+Все операции аналогичны `Repository`:
 
 ```php
-interface RepositoryContract
+// Получение всех записей
+$items = $settingsRepo->all();
+
+// С фильтром
+$items = $settingsRepo->all([
+    'UF_ACTIVE' => 1
+]);
+
+// Одна запись
+$item = $settingsRepo->one(['UF_CODE' => 'main_settings']);
+
+// По ID
+$item = $settingsRepo->getById(123);
+
+// Добавление
+$id = $settingsRepo->add([
+    'UF_NAME' => 'Setting Name',
+    'UF_VALUE' => 'Setting Value'
+]);
+
+// Обновление
+$settingsRepo->update(123, [
+    'UF_VALUE' => 'New Value'
+]);
+
+// Удаление
+$settingsRepo->delete(123);
+```
+
+### Пример: Справочник
+
+```php
+$directoryRepo = new HighloadRepository('Directory');
+
+// Получение всех активных элементов
+$items = $directoryRepo->all(
+    ['UF_ACTIVE' => 1],
+    ['UF_ID', 'UF_NAME', 'UF_CODE', 'UF_SORT'],
+    ['UF_SORT' => 'ASC']
+);
+
+// Поиск по коду
+$item = $directoryRepo->one(['UF_CODE' => 'delivery_types']);
+
+// Добавление нового элемента
+$id = $directoryRepo->add([
+    'UF_NAME' => 'Новый тип доставки',
+    'UF_CODE' => 'new_delivery',
+    'UF_ACTIVE' => 1,
+    'UF_SORT' => 500
+]);
+```
+
+## AbstractRepository
+
+Базовый абстрактный класс для всех репозиториев.
+
+### Основные методы
+
+```php
+abstract class AbstractRepository
 {
+    // Создание Query объекта
     public function query(): Query;
-    public function getList(array $parameters = []): \Bitrix\Main\ORM\Query\Result;
+    
+    // Получение сервиса запросов
+    public function getQueryService(): QueryService;
+    
+    // Получение класса сущности
+    public function getEntity(): string;
 }
 ```
 
-### CompiledEntityRepositoryContract
+### Использование query()
 
-Маркер-интерфейс для репозиториев с compiled entity (IblockRepository, HighloadRepository).
+```php
+$newsRepo = new IblockRepository('news');
 
----
+$query = $newsRepo->query()
+    ->setSelect(['ID', 'NAME', 'DATE_CREATE'])
+    ->setFilter(['ACTIVE' => 'Y'])
+    ->setOrder(['DATE_CREATE' => 'DESC'])
+    ->setLimit(10);
 
-## Регистрация в DI
+$items = $query->fetchAll();
+```
+
+## Создание собственных репозиториев
+
+### Простой репозиторий
 
 ```php
 <?php
-use YourVendor\YourModule\Repository\ProductRepository;
+namespace App\Repository;
+
+use Beeralex\Core\Repository\IblockRepository;
+
+class NewsRepository extends IblockRepository
+{
+    public function __construct()
+    {
+        parent::__construct('news');
+    }
+    
+    public function getActiveNews(int $limit = 10): array
+    {
+        return $this->getList(
+            ['ACTIVE' => 'Y'],
+            [
+                'select' => ['ID', 'NAME', 'PREVIEW_TEXT', 'DATE_CREATE'],
+                'order' => ['DATE_CREATE' => 'DESC'],
+                'limit' => $limit
+            ]
+        );
+    }
+    
+    public function getNewsByCategory(int $categoryId): array
+    {
+        return $this->getList([
+            'ACTIVE' => 'Y',
+            'PROPERTY_CATEGORY' => $categoryId
+        ]);
+    }
+}
+```
+
+### Использование
+
+```php
+$newsRepo = new NewsRepository();
+
+$activeNews = $newsRepo->getActiveNews(5);
+$categoryNews = $newsRepo->getNewsByCategory(10);
+```
+
+### Регистрация в DI
+
+```php
+// .settings.php
+use App\Repository\NewsRepository;
 
 return [
     'services' => [
         'value' => [
-            ProductRepository::class => [
-                'className' => ProductRepository::class
-            ],
-        ],
-    ],
+            NewsRepository::class => [
+                'className' => NewsRepository::class
+            ]
+        ]
+    ]
 ];
+
+// Использование
+$newsRepo = service(NewsRepository::class);
 ```
 
-Использование:
+## Продвинутые возможности
+
+### Кеширование
 
 ```php
-$productRepository = service(ProductRepository::class);
-$products = $productRepository->findActive();
+// Кеширование на 1 час (3600 секунд)
+$items = $newsRepo->all(
+    ['ACTIVE' => 'Y'],
+    ['ID', 'NAME'],
+    [],
+    3600 // TTL кеша
+);
+
+// С кешированием join'ов
+$items = $newsRepo->all(
+    ['ACTIVE' => 'Y'],
+    ['ID', 'NAME'],
+    [],
+    3600,  // TTL
+    true   // Кеширование join'ов
+);
 ```
 
----
-
-## Best Practices
-
-### 1. Один репозиторий = одна сущность
+### Использование QueryService
 
 ```php
-// ✅ Правильно
-class ProductRepository extends IblockRepository { }
-class OrderRepository extends IblockRepository { }
+$newsRepo = new IblockRepository('news');
+$queryService = $newsRepo->getQueryService();
 
-// ❌ Неправильно
-class UniversalRepository { } // для всего
+$query = $newsRepo->query()
+    ->setSelect(['ID', 'NAME', 'PROPERTY_CATEGORY'])
+    ->setFilter(['ACTIVE' => 'Y']);
+
+// Группировка сущностей (декомпозиция множественных свойств)
+$items = $queryService->fetchGroupedEntities($query);
 ```
 
-### 2. Инкапсулируйте логику запросов
+### Сложные запросы
 
 ```php
-// ✅ Правильно
-$products = $productRepository->findActiveInStock();
+$newsRepo = new IblockRepository('news');
 
-// ❌ Неправильно
-$products = $productRepository->query()
-    ->where('ACTIVE', 'Y')
-    ->where('QUANTITY', '>', 0)
-    ->fetchAll();
+$items = $newsRepo->getList(
+    [
+        'ACTIVE' => 'Y',
+        [
+            'LOGIC' => 'OR',
+            ['PROPERTY_IMPORTANT' => 'Y'],
+            ['>=DATE_CREATE' => date('Y-m-d', strtotime('-7 days'))]
+        ]
+    ],
+    [
+        'select' => [
+            'ID',
+            'NAME',
+            'DATE_CREATE',
+            'PROPERTY_CATEGORY',
+            'PROPERTY_IMPORTANT'
+        ],
+        'order' => [
+            'PROPERTY_IMPORTANT' => 'DESC',
+            'DATE_CREATE' => 'DESC'
+        ],
+        'limit' => 20
+    ]
+);
 ```
 
-### 3. Используйте типизацию
+### Транзакции
 
 ```php
-/**
- * @extends AbstractRepository<ProductTable>
- */
-class ProductRepository extends AbstractRepository
-{
-    public function findById(int $id): ?array { }
+use Bitrix\Main\Application;
+
+$connection = Application::getConnection();
+$connection->startTransaction();
+
+try {
+    $newsRepo = new IblockRepository('news');
     
-    /** @return array[] */
-    public function findAll(): array { }
+    $id = $newsRepo->add([
+        'NAME' => 'Новость 1'
+    ]);
+    
+    $newsRepo->add([
+        'NAME' => 'Новость 2',
+        'PROPERTY_VALUES' => [
+            'RELATED_NEWS' => $id
+        ]
+    ]);
+    
+    $connection->commitTransaction();
+} catch (\Exception $e) {
+    $connection->rollbackTransaction();
+    throw $e;
 }
 ```
 
-### 4. Декомпозиция для сложных запросов
+## Примеры из проекта
+
+### beeralex.reviews
 
 ```php
-// Если запрос с 5+ JOIN и работает медленно
-public function __construct()
-{
-    parent::__construct(
-        entityClass: ProductTable::class,
-        useDecompose: true
-    );
-}
-```
-
----
-
-## Примеры из реальных проектов
-
-### Репозиторий пользователей
-
-```php
-<?php
-namespace Beeralex\User;
-
-use Beeralex\Core\Repository\AbstractRepository;
-
-class UserRepository extends AbstractRepository
+class ReviewRepository extends IblockRepository
 {
     public function __construct()
     {
-        parent::__construct(UserTable::class);
+        parent::__construct('reviews');
     }
-
-    public function getByEmail(string $email): ?array
+    
+    public function getReviewsByProduct(int $productId, int $limit = 10): array
     {
-        return $this->query()
-            ->where('EMAIL', $email)
-            ->fetch();
-    }
-
-    public function getByPhone(string $phone): ?array
-    {
-        return $this->query()
-            ->where('PHONE_AUTH.PHONE_NUMBER', $phone)
-            ->fetch();
-    }
-
-    public function getById(int $userId): ?array
-    {
-        return $this->query()
-            ->where('ID', $userId)
-            ->fetch();
+        return $this->getList(
+            [
+                'ACTIVE' => 'Y',
+                'PROPERTY_PRODUCT' => $productId
+            ],
+            [
+                'select' => ['ID', 'NAME', 'PREVIEW_TEXT', 'PROPERTY_RATING'],
+                'order' => ['DATE_CREATE' => 'DESC'],
+                'limit' => $limit
+            ]
+        );
     }
 }
 ```
 
-### Репозиторий локаций
+### beeralex.favorite
 
 ```php
-<?php
-namespace Beeralex\Core\Repository;
+$favoriteRepo = new HighloadRepository('Favorites');
 
-class LocationRepository extends Repository
-{
-    public function __construct()
-    {
-        parent::__construct(LocationTable::class);
-    }
+// Добавление в избранное
+$favoriteRepo->add([
+    'UF_USER_ID' => $userId,
+    'UF_PRODUCT_ID' => $productId,
+    'UF_DATE' => new \Bitrix\Main\Type\DateTime()
+]);
 
-    public function findByCode(string $code): ?array
-    {
-        return $this->query()
-            ->where('CODE', $code)
-            ->fetch();
-    }
-
-    public function findByType(string $type): array
-    {
-        return $this->query()
-            ->where('TYPE.CODE', $type)
-            ->fetchAll();
-    }
-}
+// Проверка наличия в избранном
+$exists = $favoriteRepo->one([
+    'UF_USER_ID' => $userId,
+    'UF_PRODUCT_ID' => $productId
+]);
 ```
+
+## Заключение
+
+Репозитории в `beeralex.core`:
+- Упрощают работу с данными Bitrix
+- Предоставляют единый API для всех сущностей
+- Поддерживают кеширование и оптимизацию запросов
+- Улучшают читаемость и поддерживаемость кода
+- Следуют Repository Pattern
+
+Используйте репозитории вместо прямого обращения к API Bitrix для лучшей архитектуры приложения.
