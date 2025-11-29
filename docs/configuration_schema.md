@@ -119,7 +119,7 @@ $tab->checkbox(
     help: 'Включить функцию',       // Подсказка
     label: null,                    // Метка (опционально)
     disabled: false,                // Отключено ли поле
-    checkedDefault: true            // Значение по умолчанию
+    checkedDefault: false           // Значение по умолчанию (в реализации по умолчанию = false)
 );
 ```
 
@@ -143,7 +143,8 @@ $tab->password(
     name: 'SECRET_KEY',
     help: 'Секретный ключ',
     label: null,
-    default: ''
+    // default опционален; в реализации по умолчанию = null
+    default: null
 );
 ```
 
@@ -154,10 +155,13 @@ $tab->textArea(
     name: 'DESCRIPTION',
     help: 'Описание',
     label: null,
-    size: ['rows' => 10, 'cols' => 50],
+    // size — индексный массив [rows, cols], например [10, 50]
+    size: [10, 50],
     default: ''
 );
 ```
+
+> Примечание: `textArea` в реализации ожидает индексный массив вида `[rows, cols]`. Если вы используете ассоциативную форму `['rows'=>..,'cols'=>..]`, `TabsFactory` передаст её дальше как есть, но `Fields\\TextArea::setSize()` ожидает индексный массив; рекомендуем использовать `[rows, cols]`.
 
 ### select() - Выпадающий список
 
@@ -304,10 +308,10 @@ use Bitrix\Main\Config\Option;
 
 class JwtOptions extends AbstractOptions
 {
-    public bool $enableJwtAuth;
-    public string $jwtSecret;
-    public int $jwtTtl;
-    public string $jwtAlgorithm;
+    public readonly bool $enableJwtAuth;
+    public readonly string $jwtSecret;
+    public readonly int $jwtTtl;
+    public readonly string $jwtAlgorithm;
     
     public function getModuleId(): string
     {
@@ -318,10 +322,10 @@ class JwtOptions extends AbstractOptions
     {
         $moduleId = $this->getModuleId();
         
-        $this->enableJwtAuth = Option::get($moduleId, 'BEERALEX_USER_ENABLE_JWT_AUTH', 'N') === 'Y';
-        $this->jwtSecret = Option::get($moduleId, 'BEERALEX_USER_JWT_SECRET_KEY', '');
-        $this->jwtTtl = (int)Option::get($moduleId, 'BEERALEX_USER_JWT_TTL', '3600');
-        $this->jwtAlgorithm = Option::get($moduleId, 'BEERALEX_USER_JWT_ALGORITHM', 'HS256');
+        $this->enableJwtAuth = $options['BEERALEX_USER_ENABLE_JWT_AUTH'];
+        $this->jwtSecret = $options['BEERALEX_USER_JWT_SECRET_KEY'];
+        $this->jwtTtl = (int)$options['BEERALEX_USER_JWT_TTL'];
+        $this->jwtAlgorithm = $options['BEERALEX_USER_JWT_ALGORITHM'];
     }
     
     protected function validateOptions(): void

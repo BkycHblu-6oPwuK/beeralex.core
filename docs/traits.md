@@ -10,7 +10,7 @@
 
 ```php
 use Beeralex\Core\Traits\Cacheable;
-use Beeralex\Core\Dto\CacheSettings;
+use Beeralex\Core\Dto\CacheSettingsDTO;
 
 class ProductService
 {
@@ -18,13 +18,13 @@ class ProductService
     
     public function getProducts(): array
     {
-        $cacheSettings = new CacheSettings(
+        $cacheSettingsDTO = new CacheSettingsDTO(
             time: 3600,              // Время жизни кеша в секундах
             key: 'products_list',    // Ключ кеша
             dir: '/products'         // Директория кеша
         );
         
-        return $this->getCached($cacheSettings, function() {
+        return $this->getCached($cacheSettingsDTO, function() {
             // Тяжелая операция получения данных
             $repository = new IblockRepository('catalog');
             return $repository->all(['ACTIVE' => 'Y']);
@@ -33,12 +33,12 @@ class ProductService
 }
 ```
 
-### CacheSettings
+### CacheSettingsDTO
 
 DTO для настроек кеширования:
 
 ```php
-$settings = new CacheSettings(
+$settings = new CacheSettingsDTO(
     time: 3600,           // Время жизни кеша
     key: 'cache_key',     // Уникальный ключ
     dir: '/cache/dir'     // Директория для хранения
@@ -59,7 +59,7 @@ $settings->abortCache = true;
 
 Инициализирует инстанс кеша Bitrix. Вызывается автоматически.
 
-**getCached(CacheSettings $settings, callable $callback)**
+**getCached(CacheSettingsDTO $settings, callable $callback)**
 
 Получает данные с кешированием:
 - Если кеш валиден - возвращает закешированные данные
@@ -67,13 +67,13 @@ $settings->abortCache = true;
 - При ошибке в callback - сбрасывает кеш и пробрасывает исключение
 
 ```php
-$data = $this->getCached($cacheSettings, function() {
+$data = $this->getCached($cacheSettingsDTO, function() {
     // Логика получения данных
     return $heavyOperation();
 });
 
 // Проверка источника данных
-if ($cacheSettings->fromCache) {
+if ($cacheSettingsDTO->fromCache) {
     // Данные из кеша
 }
 ```
@@ -82,12 +82,12 @@ if ($cacheSettings->fromCache) {
 
 ```php
 // Условный сброс кеша
-$data = $this->getCached($cacheSettings, function() use ($cacheSettings) {
+$data = $this->getCached($cacheSettingsDTO, function() use ($cacheSettingsDTO) {
     $result = fetchData();
     
     // Если данные пустые - не кешируем
     if (empty($result)) {
-        $cacheSettings->abortCache = true;
+        $cacheSettingsDTO->abortCache = true;
     }
     
     return $result;
@@ -106,13 +106,13 @@ class CachedProductRepository extends AbstractRepository
     
     public function getFeaturedProducts(): array
     {
-        $cacheSettings = new CacheSettings(
+        $cacheSettingsDTO = new CacheSettingsDTO(
             time: 86400, // 24 часа
             key: 'featured_products',
             dir: '/catalog/featured'
         );
         
-        return $this->getCached($cacheSettings, function() {
+        return $this->getCached($cacheSettingsDTO, function() {
             return $this->getList(
                 ['ACTIVE' => 'Y', 'PROPERTY_FEATURED' => 'Y'],
                 ['order' => ['SORT' => 'ASC'], 'limit' => 10]
@@ -463,13 +463,13 @@ class CachedFileService
     
     public function getFilesList(): array
     {
-        $cacheSettings = new CacheSettings(
+        $cacheSettingsDTO = new CacheSettingsDTO(
             time: 300,
             key: 'files_list_' . md5($this->baseDir),
             dir: '/files'
         );
         
-        return $this->getCached($cacheSettings, function() {
+        return $this->getCached($cacheSettingsDTO, function() {
             return scandir($this->baseDir);
         });
     }

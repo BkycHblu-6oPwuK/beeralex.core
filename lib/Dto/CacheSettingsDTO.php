@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Beeralex\Core\Dto;
 
-class CacheSettingsDto
+class CacheSettingsDTO
 {
     public int $time;
     public readonly string $key;

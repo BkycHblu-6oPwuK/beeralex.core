@@ -55,34 +55,35 @@ class ProductController extends ApiController
 
 ### Автоматическая валидация DTO
 
+Валидация DTO выполняется через атрибуты валидации из пакета Bitrix (`Bitrix\Main\Validation\Rule`). Класс `AbstractRequestDto` использует `ValidationService` для проверки объекта — поэтому необходимо помечать свойства атрибутами правил.
+
 ```php
 use Beeralex\Core\Http\Request\AbstractRequestDto;
+use Bitrix\Main\Validation\Rule\NotEmpty;
+use Bitrix\Main\Validation\Rule\Min;
+use Bitrix\Main\Validation\Rule\Length;
 
-// DTO класс
+// DTO класс с атрибутами валидации
 class CreateProductDto extends AbstractRequestDto
 {
+    #[NotEmpty]
     public string $name;
+
+    #[Min(0)]
     public int $price;
+
+    // необязательное поле — без атрибута валидации; можно добавить, например, Length
     public ?string $description = null;
-    
-    protected function rules(): array
-    {
-        return [
-            'name' => ['required', 'string'],
-            'price' => ['required', 'integer', 'min:0'],
-            'description' => ['nullable', 'string'],
-        ];
-    }
 }
 
-// Контроллер
+// Контроллер — пример использования
 class ProductController extends ApiController
 {
     public function createAction(CreateProductDto $dto): array
     {
         // DTO автоматически валидируется в processBeforeAction
-        // Если валидация не прошла, запрос не дойдет до этой точки
-        
+        // Если валидация не прошла, ApiController добавит ошибки и метод может не быть вызван
+
         $repository = new IblockRepository('catalog');
         $id = $repository->add([
             'NAME' => $dto->name,
@@ -91,11 +92,16 @@ class ProductController extends ApiController
                 'DESCRIPTION' => $dto->description,
             ]
         ]);
-        
+
         return ['id' => $id];
     }
 }
 ```
+
+Примечания:
+- Для сложных правил используйте соответствующие атрибуты из `Bitrix\Main\Validation\Rule` (например, `Email`, `RegExp`, `InArray`, `Length` и т.д.).
+- Если нужно кастомизировать сообщение об ошибке, многие атрибуты принимают параметр `errorMessage`.
+- DTO создаётся через `AbstractRequestDto::fromArray()` (или автоматически в `ApiController` из параметров запроса), а затем валидируется методом `validate()` (вызывается в `processBeforeAction`).
 
 ### Работа с JSON
 
@@ -238,23 +244,25 @@ interface RequestDtoContract
 
 ```php
 use Beeralex\Core\Http\Request\AbstractRequestDto;
+use Bitrix\Main\Validation\Rule\Email;
+use Bitrix\Main\Validation\Rule\NotEmpty;
+use Bitrix\Main\Validation\Rule\Length;
+use Bitrix\Main\Validation\Rule\RegExp;
 
 class CreateUserDto extends AbstractRequestDto
 {
+    #[Email]
     public string $email;
+
+    #[NotEmpty]
+    #[Length(6)]
     public string $password;
+
+    #[Length(100)]
     public ?string $name = null;
+
+    #[RegExp('/^\+?[0-9]{10,15}$/')]
     public ?string $phone = null;
-    
-    protected function rules(): array
-    {
-        return [
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string', 'min:6'],
-            'name' => ['nullable', 'string', 'max:100'],
-            'phone' => ['nullable', 'string', 'regex:/^\+?[0-9]{10,15}$/'],
-        ];
-    }
 }
 ```
 

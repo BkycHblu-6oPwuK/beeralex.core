@@ -214,7 +214,7 @@ class CatalogService
     }
 
     /**
-     * Добавить склад/количество (STORE_PRODUCT) в запрос
+     * Добавить склад/количество (STORE_PRODUCT) в запрос и опционально склад (STORE) из StoreTable
      */
     public function addStoreToQuery(Query $query, string $thisFieldReference = 'ID'): Query
     {

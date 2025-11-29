@@ -57,6 +57,11 @@ class UrlService
 
     /**
      * Возвращает URL элемента инфоблока
+     * @param array{
+     *     CODE: string,
+     *     ID: string
+     *     IBLOCK_SECTION_ID: int
+     * } $elementFields
      * @return array{
      *     url: string,
      *     clean_url: string,

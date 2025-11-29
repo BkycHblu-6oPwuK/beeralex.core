@@ -30,6 +30,9 @@ class FileService
         return $toSavefiles;
     }
 
+    /**
+     * Добавляет в запрос выборку пути картинки по полю ссылки на файл. IMG - алиас для файла, PICTURE_SRC - алиас для пути картинки.
+     */
     public function addPictireSrcInQuery(Query $query, string $thisFieldReference): Query
     {
         $query->registerRuntimeField('IMG', [

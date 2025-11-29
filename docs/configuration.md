@@ -16,9 +16,9 @@ use Beeralex\Core\Config\AbstractOptions;
 
 class Options extends AbstractOptions
 {
-    public bool $enableFeature;
-    public string $apiKey;
-    public int $timeout;
+    public readonly bool $enableFeature;
+    public readonly string $apiKey;
+    public readonly int $timeout;
     
     public function getModuleId(): string
     {

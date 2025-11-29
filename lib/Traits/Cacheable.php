@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace Beeralex\Core\Traits;
 
 use Bitrix\Main\Data\Cache;
-use Beeralex\Core\Dto\CacheSettingsDto;
+use Beeralex\Core\Dto\CacheSettingsDTO;
 
 trait Cacheable
 {
@@ -16,7 +16,7 @@ trait Cacheable
         }
     }
 
-    protected function getCached(CacheSettingsDto $cacheSettings, callable $callback)
+    protected function getCached(CacheSettingsDTO $cacheSettings, callable $callback)
     {
         $this->initCacheInstance();
 

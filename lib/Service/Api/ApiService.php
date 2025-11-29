@@ -5,7 +5,7 @@ namespace Beeralex\Core\Service\Api;
 use Beeralex\Core\Config\AbstractOptions;
 use Bitrix\Main\Web\Json;
 use Bitrix\Main\Web\Uri;
-use Beeralex\Core\Dto\CacheSettingsDto;
+use Beeralex\Core\Dto\CacheSettingsDTO;
 use Beeralex\Core\Enum\Method;
 use Beeralex\Core\Exceptions\ApiClientException;
 use Beeralex\Core\Traits\Cacheable;
@@ -41,7 +41,7 @@ abstract class ApiService
      * @param null|array $data ключ-значение
      * @param null|array $headers ключ-значение
      */
-    protected function get(Uri $uri, ?array $data = null, ?array $headers = null, ?CacheSettingsDto $cacheSettings = null): array
+    protected function get(Uri $uri, ?array $data = null, ?array $headers = null, ?CacheSettingsDTO $cacheSettings = null): array
     {
         if ($data) $uri->addParams($data);
         if ($headers) $this->clientService->setHeaders($headers);
@@ -53,17 +53,17 @@ abstract class ApiService
      * @param mixed $data
      * @param null|array $headers ключ-значение
      */
-    protected function post(Uri $uri, mixed $data = null, ?array $headers = null, ?CacheSettingsDto $cacheSettings = null): array
+    protected function post(Uri $uri, mixed $data = null, ?array $headers = null, ?CacheSettingsDTO $cacheSettings = null): array
     {
         $this->clientService->setPostData($data);
         if ($headers) $this->clientService->setHeaders($headers);
         return $this->request(Method::POST, $uri, $cacheSettings);
     }
 
-    private function request(Method $method, Uri $uri, ?CacheSettingsDto $cacheSettings = null): array
+    private function request(Method $method, Uri $uri, ?CacheSettingsDTO $cacheSettings = null): array
     {
         try {
-            $cacheSettings ??= new CacheSettingsDto;
+            $cacheSettings ??= new CacheSettingsDTO;
 
             $result = $this->getCached($cacheSettings, function () use ($method, $uri) {
                 return $this->handleResult($this->clientService->request($method, $uri)->getResult());
