@@ -7,6 +7,9 @@ use Bitrix\Main\Web\HttpHeaders;
 
 class WebService
 {
+    /**
+     * Выводит JSON ответ и завершает выполнение скрипта
+     */
     public function jsonAnswer(array $result)
     {
         global $APPLICATION;
@@ -17,6 +20,9 @@ class WebService
         \CMain::FinalActions();
     }
 
+    /**
+     * Собирает HTTP заголовки из объекта HttpHeaders в ассоциативный массив
+     */
     public function collectHttpHeaders(HttpHeaders $headers): array
     {
         $list = [];
@@ -28,6 +34,9 @@ class WebService
         return $list;
     }
 
+    /**
+     * Извлекает версию HTTP протокола из SERVER_PROTOCOL
+     */
     public function parseHttpProtocolVersion(?string $serverProtocol): string
     {
         return $serverProtocol !== null

@@ -7,6 +7,7 @@ namespace Beeralex\Core\Service;
 class LanguageService
 {
     /**
+     * Получает правильную форму слова в зависимости от числа
      * @param string[] $variants
      *
      * @example LanguageHelper::getPlural($periodTo, ['день', 'дня', 'дней'])
@@ -24,6 +25,9 @@ class LanguageService
         return (string)$variants[2];
     }
 
+    /**
+     * Транслитерирует строку
+     */
     public function transliterate(string $str, string $lang = 'en', array $params = []): string
     {
         if ($lang === 'en' && LANGUAGE_ID === 'ru') {

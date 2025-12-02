@@ -13,6 +13,8 @@ use Beeralex\Core\Logger\FileLoggerFactory;
 use Beeralex\Core\Logger\LoggerFactoryContract;
 use Beeralex\Core\Model\SectionTableFactory;
 use Beeralex\Core\Repository\LocationRepository;
+use Beeralex\Core\Repository\PropertyFeaturesRepository;
+use Beeralex\Core\Repository\PropertyRepository;
 use Beeralex\Core\Service\Api\ClientService;
 use Beeralex\Core\Service\CatalogService;
 use Beeralex\Core\Service\ControllerService;
@@ -59,6 +61,12 @@ return [
             ],
             LocationRepository::class => [
                 'className' => LocationRepository::class
+            ],
+            PropertyFeaturesRepository::class => [
+                'className' => PropertyFeaturesRepository::class
+            ],
+            PropertyRepository::class => [
+                'className' => PropertyRepository::class
             ],
             CatalogService::class => [
                 'className' => CatalogService::class

@@ -2,6 +2,9 @@
 
 namespace Beeralex\Core\Config;
 
+/**
+ * Конфигурация модуля beeralex.core|всего проекта из .env и настроек Bitrix
+ */
 final class Config extends AbstractOptions
 {
     public readonly string $mode;

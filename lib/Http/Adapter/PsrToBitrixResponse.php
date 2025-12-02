@@ -8,6 +8,9 @@ use Psr\Http\Message\ResponseInterface;
 
 class PsrToBitrixResponse
 {
+    /**
+     * Преобразует PSR-7 Response в Bitrix HttpResponse
+     */
     public function convert(ResponseInterface $psrResponse): HttpResponse
     {
         $headers = new HttpHeaders();

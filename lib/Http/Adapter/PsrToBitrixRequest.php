@@ -8,6 +8,9 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class PsrToBitrixRequest
 {
+    /**
+     * Преобразует PSR-7 ServerRequestInterface в Bitrix HttpRequest
+     */
     public function convert(ServerRequestInterface $psrRequest): HttpRequest
     {
         $serverParams = $psrRequest->getServerParams();

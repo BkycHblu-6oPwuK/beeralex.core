@@ -9,6 +9,7 @@ use Bitrix\Main\ORM\Query\Query;
 class FileService
 {
     /**
+     * Возвращает массив файлов в формате удобном для сохранения через CFile::SaveFile
      * @param array $files $_FILES
      */
     public function getFormattedToSafe(?array $files): array
@@ -50,6 +51,9 @@ class FileService
         return $query;
     }
 
+    /**
+     * Рекурсивно копирует файлы из одной директории в другую
+     */
     public function copyRecursive(string $source, string $target)
     {
         if (!is_dir($source)) {

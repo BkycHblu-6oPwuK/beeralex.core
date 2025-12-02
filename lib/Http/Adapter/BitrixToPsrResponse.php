@@ -13,6 +13,9 @@ class BitrixToPsrResponse
         protected WebService $webService
     ){}
 
+    /**
+     * Преобразует Bitrix HttpResponse в PSR-7 Response
+     */
     public function convert(HttpResponse $response): Response
     {
         $serverProtocol = Context::getCurrent()->getServer()->get('SERVER_PROTOCOL') ?? 'HTTP/1.0';

@@ -4,6 +4,9 @@ namespace Beeralex\Core\Http\Controllers;
 
 use Bitrix\Main\Engine\Controller;
 
+/**
+ * Базовый веб-контроллер с поддержкой рендеринга представлений и обработкой ошибок
+ */
 abstract class WebController extends Controller
 {
     const VIEWS_PATH = '/local/views/';

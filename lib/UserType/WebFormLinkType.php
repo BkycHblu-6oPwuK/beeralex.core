@@ -2,6 +2,10 @@
 declare(strict_types=1);
 namespace Beeralex\Core\UserType;
 
+/**
+ * Пользовательский тип свойства для привязки к веб-форме
+ * Используется для создания выпадающего списка с веб-формами
+ */
 class WebFormLinkType
 {
     public static function GetUserTypeDescription()

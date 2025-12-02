@@ -7,7 +7,7 @@ use Beeralex\Core\Config\Config;
 use Bitrix\Main\Web\Json;
 
 /**
- * Класс для подключения js и css из vite, а так же получения html с ssr сервера
+ * Класс для подключения js и css из vite
  */
 class ViteService
 {

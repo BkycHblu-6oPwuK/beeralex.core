@@ -2,6 +2,10 @@
 declare(strict_types=1);
 namespace Beeralex\Core\Dto;
 
+/**
+ *  DTO для хранения настроек кэширования
+ *  Используется для передачи параметров кэширования между сервисами
+ */
 class CacheSettingsDTO
 {
     public int $time;

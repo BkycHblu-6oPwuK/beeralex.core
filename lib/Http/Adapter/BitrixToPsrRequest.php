@@ -13,6 +13,9 @@ class BitrixToPsrRequest
         protected WebService $webService
     ){}
 
+    /**
+     * Преобразует Bitrix HttpRequest в PSR-7 ServerRequestInterface
+     */
     public function convert(HttpRequest $request): ServerRequestInterface
     {
         $serverRequest = new ServerRequest(

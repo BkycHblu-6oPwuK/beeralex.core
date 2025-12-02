@@ -11,6 +11,9 @@ class PaginationService
         Loader::includeModule("iblock");
     }
     
+    /**
+     * Преобразует объект навигации CIBlockResult в массив с данными пагинации
+     */
     public function toArray(?\CIBlockResult $nav, int $pageWindow = 5): array
     {
         if (!$nav) {
@@ -32,6 +35,9 @@ class PaginationService
         ];
     }
 
+    /**
+     * Возвращает массив страниц для пагинации
+     */
     public function getPages(int $currentPage, int $pageCount, int $pageWindow = 5): array
     {
         if ($currentPage > floor($pageWindow / 2) + 1 && $pageCount > $pageWindow) {
@@ -59,6 +65,9 @@ class PaginationService
         return $pages;
     }
 
+    /**
+     * Возвращает параметры пагинации по количеству элементов и размеру страницы
+     */
     public function getPagination(int $itemsCnt, int $pageSize, string $pageUrlParam = 'page'): array
     {
         $pageCount = (int)max(1, ceil($itemsCnt / $pageSize));

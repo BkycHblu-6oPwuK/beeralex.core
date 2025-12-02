@@ -4,6 +4,9 @@ namespace Beeralex\Core\Traits;
 
 trait PathNormalizerTrait
 {
+    /**
+     * Нормализация пути к базовой директории (если путь указывает на файл, вернёт директорию файла)
+     */
     protected function normalizeBaseDir(string $path): string
     {
         $real = realpath($path);

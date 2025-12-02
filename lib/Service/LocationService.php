@@ -11,12 +11,10 @@ use Beeralex\Core\Repository\LocationRepository;
  */
 class LocationService
 {
-    public readonly LocationRepository $locationRepository;
-
-    public function __construct(LocationRepository $locationRepository)
-    {
+    public function __construct(
+        protected readonly LocationRepository $locationRepository
+    ) {
         Loader::includeModule("sale");
-        $this->locationRepository = $locationRepository;
     }
 
     /**

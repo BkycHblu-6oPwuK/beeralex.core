@@ -6,6 +6,9 @@ use Bitrix\Main\SystemException;
 
 class Repository extends AbstractRepository
 {
+    /**
+     * Возвращает все записи, соответствующие фильтру
+     */
     public function all(array $filter = [], array $select = ['*'], array $order = [], int $cacheTtl = 0, bool $cacheJoins = false): array
     {
         $query = $this->query()
@@ -18,6 +21,9 @@ class Repository extends AbstractRepository
         return $this->useDecompose ? $this->queryService->fetchGroupedEntities($query) : $query->fetchAll();
     }
 
+    /**
+     * Возвращает одну запись, соответствующую фильтру
+     */
     public function one(array $filter = [], array $select = ['*'], int $cacheTtl = 0, bool $cacheJoins = false): ?array
     {
         $query = $this->query()
@@ -30,11 +36,18 @@ class Repository extends AbstractRepository
         return empty($result) ? null : $result;
     }
 
+    /**
+     * Возвращает запись по её ID
+     */
     public function getById(int $id, array $select = ['*']): ?array
     {
         return $this->one(['ID' => $id], $select);
     }
 
+    /**
+     * Добавляет новую запись и возвращает её ID
+     * @throws SystemException
+     */
     public function add(array|object $data): int
     {
         $result = $this->entityClass::add((array)$data);
@@ -44,6 +57,10 @@ class Repository extends AbstractRepository
         return $result->getId();
     }
 
+    /**
+     * Обновляет запись по её ID
+     * @throws SystemException
+     */
     public function update(int $id, array|object $data): void
     {
         $result = $this->entityClass::update($id, (array)$data);
@@ -52,6 +69,10 @@ class Repository extends AbstractRepository
         }
     }
 
+    /**
+     * Удаляет запись по её ID
+     * @throws SystemException
+     */
     public function delete(int $id): void
     {
         $result = $this->entityClass::delete($id);
@@ -60,6 +81,9 @@ class Repository extends AbstractRepository
         }
     }
 
+    /**
+     * Сохраняет запись (добавляет или обновляет) и возвращает её ID
+     */
     public function save(array|object $data): int
     {
         if (!empty($data['ID'])) {

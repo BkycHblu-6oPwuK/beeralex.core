@@ -14,8 +14,6 @@ class HlblockService
 
     /**
      * Получает ID хайлоадблока по его имени
-     *
-     * @param string $hlblockName
      * @return int
      * @throws \Exception
      */
@@ -37,8 +35,6 @@ class HlblockService
 
     /**
      * Получает класс хайлоадблока по его ID
-     *
-     * @param int $hlblockId
      * @return string|\Bitrix\Main\ORM\Data\DataManager
      * @throws \Exception
      */
@@ -60,8 +56,6 @@ class HlblockService
 
     /**
      * Получает класс хайлоадблока по его имени таблицы
-     *
-     * @param string $tableName
      * @return string|\Bitrix\Main\ORM\Data\DataManager
      * @throws \Exception
      */
@@ -82,9 +76,30 @@ class HlblockService
     }
 
     /**
+     * получает массив классов хайлоадблоков по их именам таблиц
+     */
+    public function getHlBlocksByTableNames(array $tableNames): array
+    {
+        if(empty($tableNames)) {
+            return [];
+        }
+        $hlblocks = [];
+        $blocks = HighloadBlockTable::query()
+            ->setSelect(['*'])
+            ->whereIn('TABLE_NAME', $tableNames)
+            ->setCacheTtl(86400)
+            ->exec()
+            ->fetchAll();
+
+        foreach ($blocks as $block) {
+            $hlblocks[$block['TABLE_NAME']] = HighloadBlockTable::compileEntity($block)->getDataClass();
+        }
+        
+        return $hlblocks;
+    }
+
+    /**
      * Получает класс хайлоадблока по его имени
-     *
-     * @param string $hlblockName
      * @return string|\Bitrix\Main\ORM\Data\DataManager
      * @throws \Exception
      */

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Beeralex\Core\Traits;
 
+/**
+ * Трейт для работы с ресурсом как с массивом и объектом одновременно, реализует ArrayAccess, Countable, JsonSerializable, IteratorAggregate
+ */
 trait Resourceble
 {
     private $resource;

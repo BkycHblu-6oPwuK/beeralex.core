@@ -5,6 +5,9 @@ namespace Beeralex\Core\Http\Request;
 use Bitrix\Main\Validation\ValidationResult;
 use Bitrix\Main\Validation\ValidationService;
 
+/**
+ * Базовый абстрактный класс для DTO запросов с поддержкой валидации на атрибутах
+ */
 abstract class AbstractRequestDto implements RequestDtoContract
 {
     private ?ValidationResult $validationResult = null;

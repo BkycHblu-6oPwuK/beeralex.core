@@ -38,6 +38,9 @@ class PathService
         return realpath($path) ?: $path;
     }
 
+    /**
+     * Получает текущий URI запроса
+     */
     public function getCurUri(): \Bitrix\Main\Web\Uri
     {
         $server = \Bitrix\Main\Context::getCurrent()->getServer();

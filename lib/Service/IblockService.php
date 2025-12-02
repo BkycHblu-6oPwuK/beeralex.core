@@ -62,6 +62,7 @@ class IblockService
     }
 
     /**
+     * Получает ID свойства инфоблока по его символьному коду
      * @throws \InvalidArgumentException
      */
     public function getIblockPropIdByCode(string $code, int $iblockId): int
@@ -76,6 +77,9 @@ class IblockService
         return $propId ? (int)$propId : 0;
     }
 
+    /**
+     * Получает значения списка (enum) свойства инфоблока по его ID и массиву XML_ID значений
+     */
     public function getEnumValues(int $propId, array $xmlIds = []): array
     {
         $dbRes = \CIBlockPropertyEnum::GetList([], [
@@ -93,6 +97,9 @@ class IblockService
         return $values;
     }
 
+    /**
+     * Добавляет в запрос связь с моделью разделов инфоблока, чтобы можно было получать разделы через IBLOCK_MODEL_SECTION
+     */
     public function addSectionModelToQuery(Iblock|int $iblock, Query $query): Query
     {
         $sectionModel = service(SectionTableFactory::class)->compileEntityByIblock($iblock);
@@ -105,6 +112,9 @@ class IblockService
         return $query;
     }
 
+    /**
+     * Добавляет в запрос связь с моделью свойств инфоблока, чтобы можно было получать свойства через IBLOCK_MODEL_PROPERTY
+     */
     public function addPropertyModelToQuery(Query $query): Query
     {
         $query->registerRuntimeField('IBLOCK_MODEL_PROPERTY', [

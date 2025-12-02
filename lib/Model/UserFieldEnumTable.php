@@ -7,6 +7,9 @@ use Bitrix\Main\ORM\Fields\Relations\Reference;
 use Bitrix\Main\ORM\Fields\StringField;
 use Bitrix\Main\UserFieldTable;
 
+/**
+ * Класс для работы с таблицей перечислений пользовательских полей, таблица b_user_field_enum
+ */
 class UserFieldEnumTable extends DataManager
 {
     public static function getTableName()

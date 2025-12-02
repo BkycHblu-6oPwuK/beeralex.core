@@ -17,6 +17,9 @@ class UrlService
         $this->removeParts = static::getRemoveParts();
     }
 
+    /**
+     * Получает из конфигурации части URL, которые нужно удалять
+     */
     public static function getRemoveParts(): array
     {
         $config = Configuration::getInstance()->get('beeralex.core');

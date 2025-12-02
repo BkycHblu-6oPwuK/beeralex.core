@@ -16,6 +16,9 @@ trait Cacheable
         }
     }
 
+    /**
+     * Получает данные из кеша или выполняет callback и кеширует результат
+     */
     protected function getCached(CacheSettingsDTO $cacheSettings, callable $callback)
     {
         $this->initCacheInstance();

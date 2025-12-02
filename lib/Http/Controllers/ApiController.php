@@ -8,6 +8,7 @@ use Bitrix\Main\Error;
 use Bitrix\Main\Web\Json;
 
 /**
+ * Базовый API контроллер с поддержкой DTO и Resource в аргументах действий
  * @todo bitrix там что то делает с атрибутами, и вроде можно будет автовалидировать без обработки в processBeforeAction
  */
 abstract class ApiController extends Controller

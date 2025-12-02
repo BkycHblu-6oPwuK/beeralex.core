@@ -72,6 +72,9 @@ class UserService
         return \implode('', $chars);
     }
 
+    /**
+     * Генерация уникального логина на основе email
+     */
     public function generateLogin(string $email): string
     {
         $login = \mb_strstr($email, '@', true);
@@ -93,12 +96,18 @@ class UserService
         return $defaultGroups ? \explode(',', $defaultGroups) : [];
     }
 
+    /**
+     * Проверяет пароль на соответствие политике безопасности Битрикс для указанных групп.
+     */
     public function validatePassword(string $password, array $groupIds): bool
     {
         $policy = $this->getPolicyByGroups($groupIds);
         return $this->validateByPolicy($password, $policy);
     }
 
+    /**
+     * Генерирует числовой код указанной длины
+     */
     public function generateCode(int $length = 6): string
     {
         $result = '';

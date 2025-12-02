@@ -2,6 +2,10 @@
 declare(strict_types=1);
 namespace Beeralex\Core\UserType;
 
+/**
+ * Пользовательский тип свойства для привязки к инфоблоку
+ * Используется для создания выпадающего списка с инфоблоками
+ */
 class IblockLinkType
 {
     public static function GetUserTypeDescription()
