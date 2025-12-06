@@ -50,12 +50,15 @@ class QueryService extends QueryHelper
     {
         $runtimeValues = new \ReflectionProperty($object, '_runtimeValues');
         $values = $object->collectValues(recursive: true);
-        $runtimeValues->setAccessible(true);
+            
         foreach((array)$runtimeValues->getValue($object) as $key => $item) {
             if($item instanceof EntityObject) {
                 $values[$key] = $this->convertObjectToArray($item);
+            } elseif(is_string($item) || is_numeric($item) || is_null($item)) {
+                $values[$key] = $item;
             }
         }
+
         return $values;
     }
 
@@ -73,7 +76,7 @@ class QueryService extends QueryHelper
         $items = [];
 
         while ($entity = $result->fetchObject()) {
-            if (!$entity instanceof EntityObject) {
+            if (!($entity instanceof EntityObject)) {
                 // в случае, если fetchObject вернул что-то другое, пробуем привести через collectValues
                 $values = is_object($entity) && method_exists($entity, 'collectValues')
                     ? $entity->collectValues(recursive: true)

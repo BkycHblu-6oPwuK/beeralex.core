@@ -32,7 +32,24 @@ class FileService
     }
 
     /**
+     * @return array<int, string> Возвращает массив путей файлов по их ID
+     */
+    public function getPathByIds(array $ids): array
+    {
+        $paths = [];
+        $res = FileTable::getList([
+            'filter' => ['@ID' => $ids],
+            'select' => ['ID', 'SUBDIR', 'FILE_NAME'],
+        ]);
+        while ($file = $res->fetch()) {
+            $paths[(int)$file['ID']] = '/upload/' . $file['SUBDIR'] . '/' . $file['FILE_NAME'];
+        }
+        return $paths;
+    }
+
+    /**
      * Добавляет в запрос выборку пути картинки по полю ссылки на файл. IMG - алиас для файла, PICTURE_SRC - алиас для пути картинки.
+     * не подходит для множественных файлов
      */
     public function addPictireSrcInQuery(Query $query, string $thisFieldReference): Query
     {
@@ -43,10 +60,10 @@ class FileService
             ],
             'join_type' => 'LEFT'
         ])
-            ->registerRuntimeField('PICTURE_SRC', new ExpressionField(
-                'PICTURE_SRC',
+            ->registerRuntimeField("PICTURE_SRC", new ExpressionField(
+                "PICTURE_SRC",
                 'CONCAT("/upload/", %s, "/", %s)',
-                ['img.SUBDIR', 'img.FILE_NAME']
+                ["IMG.SUBDIR", "IMG.FILE_NAME"]
             ));
         return $query;
     }
