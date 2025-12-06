@@ -3,19 +3,26 @@
 namespace Beeralex\Core\Config;
 
 use Bitrix\Main\Config\Option;
-use Beeralex\Core\Traits\Resourceble;
+use Bitrix\Main\Type\Dictionary;
 
-abstract class AbstractOptions implements \JsonSerializable, \ArrayAccess, \Countable
+/**
+ * Абстрактный класс для работы с настройками модуля
+ * Наследуется от Dictionary для поддержки ArrayAccess, Iterator, Countable, JsonSerializable
+ */
+abstract class AbstractOptions extends Dictionary
 {
-    use Resourceble;
-
     public final function __construct()
     {
         $moduleId = $this->getModuleId();
         if ($moduleId === '') {
             throw new \InvalidArgumentException('Module ID must be defined.');
         }
+        
         $options = array_merge(Option::getDefaults($moduleId), Option::getForModule($moduleId));
+        
+        // Инициализируем Dictionary
+        parent::__construct($options);
+        
         $this->mapOptions($options);
         $this->validateOptions();
     }
@@ -25,8 +32,40 @@ abstract class AbstractOptions implements \JsonSerializable, \ArrayAccess, \Coun
 
     protected function validateOptions(): void {}
 
-    public function get(string $key, mixed $default = null) : mixed
+    /**
+     * Магический геттер для доступа к опциям как к свойствам
+     */
+    public function __get(string $name)
     {
-        return $this->__get($key) ?: $default;
+        return $this->get($name);
+    }
+
+    /**
+     * Магический сеттер для установки опций как свойств
+     */
+    public function __set(string $name, $value)
+    {
+        $this->values[$name] = $value;
+    }
+
+    /**
+     * Проверка существования опции
+     */
+    public function __isset(string $name): bool
+    {
+        return $this->offsetExists($name);
+    }
+
+    /**
+     * Удаление опции
+     */
+    public function __unset(string $name)
+    {
+        $this->offsetUnset($name);
+    }
+
+    public function __jsonSerialize()
+    {
+        return $this->toArray();
     }
 }
