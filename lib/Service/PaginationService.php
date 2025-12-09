@@ -25,11 +25,13 @@ class PaginationService
                 'paginationUrlParam' => '',
             ];
         }
-
+        $pageSize = (int)$nav->NavPageSize;
+        $currentPage = (int)$nav->NavPageNomer;
         return [
             'pages' => $this->getPages((int)$nav->NavPageNomer, (int)$nav->NavPageCount, $pageWindow),
-            'pageSize' => (int)$nav->NavPageSize,
-            'currentPage' => (int)$nav->NavPageNomer,
+            'pageSize' => $pageSize,
+            'currentPage' => $currentPage,
+            'offset' => max(0, ($currentPage - 1) * $pageSize),
             'pageCount' => (int)$nav->NavPageCount,
             'paginationUrlParam' => 'PAGEN_' . $nav->NavNum,
         ];
@@ -78,6 +80,7 @@ class PaginationService
             'pages'              => $this->getPages($currentPage, $pageCount),
             'pageSize'           => $pageSize,
             'currentPage'        => $currentPage,
+            'offset'             => max(0, ($currentPage - 1) * $pageSize),
             'pageCount'          => $pageCount,
             'paginationUrlParam' => $pageUrlParam,
         ];
