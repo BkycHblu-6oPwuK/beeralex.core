@@ -50,4 +50,9 @@ abstract class AbstractRepository implements RepositoryContract
     {
         return $this->entityClass::getList($parameters);
     }
+
+    public function count(array $filter = []): int
+    {
+        return (int)$this->query()->setFilter($filter)->exec()->getCount();
+    }
 }

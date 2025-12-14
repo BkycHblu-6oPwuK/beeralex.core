@@ -18,6 +18,7 @@ interface RepositoryContract
     public function update(int $id, array|object $data): void;
     public function delete(int $id): void;
     public function save(array|object $data): int;
+    public function count(array $filter = []): int;
     /**
      * @param array{
      *     select?: array,
