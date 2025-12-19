@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Beeralex\Core\Http\Resources;
 
 use Bitrix\Main\Type\Dictionary;
@@ -86,5 +88,17 @@ abstract class Resource extends Dictionary implements ResourceContract
     public function __unset(string $name)
     {
         $this->offsetUnset($name);
+    }
+
+    public function __serialize(): array
+    {
+        return [
+            'values' => $this->values,
+        ];
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->values = $data['values'] ?? [];
     }
 }
