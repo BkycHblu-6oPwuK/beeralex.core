@@ -61,7 +61,11 @@ abstract class ApiController extends Controller
                 break;
             }
         }
-        $action->setArguments($arguments);
+        
+        if (!empty($arguments)) {
+            $action->setArguments(array_merge($action->getArguments(), $arguments));
+        }
+        
         return parent::processBeforeAction($action);
     }
 }

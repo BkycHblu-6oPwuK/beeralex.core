@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Beeralex\Core\Service;
 
 use Bitrix\Main\FileTable;
@@ -36,6 +38,9 @@ class FileService
      */
     public function getPathByIds(array $ids): array
     {
+        if (empty($ids)) {
+            return [];
+        }
         $paths = [];
         $res = FileTable::getList([
             'filter' => ['@ID' => $ids],
