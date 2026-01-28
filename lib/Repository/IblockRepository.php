@@ -59,7 +59,7 @@ class IblockRepository extends Repository implements IblockRepositoryContract
 
         // Обновляем свойства, если они переданы
         if ($propertyValues && is_array($propertyValues)) {
-            \CIBlockElement::SetPropertyValuesEx($id, $this->entityId, $propertyValues);
+            \CIBlockElement::SetPropertyValues($id, $this->entityId, $propertyValues);
         }
 
         return (int)$id;
