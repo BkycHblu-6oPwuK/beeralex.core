@@ -12,7 +12,7 @@ class beeralex_core extends CModule
     public function __construct()
     {
         $this->MODULE_ID = 'beeralex.core';
-        $this->MODULE_VERSION = '1.1.0';
+        $this->MODULE_VERSION = '1.2.0';
         $this->MODULE_VERSION_DATE = '2024-04-09 12:00:00';
         $this->MODULE_NAME = 'beeralex.core';
         $this->MODULE_DESCRIPTION = 'beeralex.core module';
