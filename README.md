@@ -2,8 +2,8 @@
 
 Базовый модуль для разработки Bitrix-приложений с современным подходом к архитектуре. Предоставляет инструменты для работы с инфоблоками, репозиториями, сервисами, контроллерами и многое другое.
 
-[![PHP](https://img.shields.io/badge/PHP-8.1+-blue.svg)](https://www.php.net/)
-[![Bitrix](https://img.shields.io/badge/Bitrix-14.0.0+-orange.svg)](https://www.bitrix24.ru/)
+[![PHP](https://img.shields.io/badge/PHP-8.2+-blue.svg)](https://www.php.net/)
+[![Bitrix](https://img.shields.io/badge/Bitrix-25.0.0+-orange.svg)](https://www.bitrix24.ru/)
 
 ## Возможности
 
