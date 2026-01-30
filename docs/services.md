@@ -339,24 +339,21 @@ use Beeralex\Core\Service\ViteService;
 
 $viteService = service(ViteService::class);
 
-// Подключение entry point'ов
-$viteService->includeEntries(['app/main.ts', 'app/admin.ts']);
+// Подключение одного entry point
+$viteService->include('app/main.ts');
 
-// Получение HTML от SSR сервера
-$html = $viteService->getSsrHtml($path, $props);
+// Подключение нескольких entry point'ов
+$viteService->includeAssets(['app/main.ts', 'app/admin.ts']);
 ```
 
 ### Основные методы
 
 ```php
-// Подключение JS и CSS из Vite
-includeEntries(array $entries): void
+// Подключение одного entry point
+include(string $entry): void
 
-// Получение HTML от SSR сервера
-getSsrHtml(string $path, array $props = []): ?string
-
-// Проверка production режима
-isProduction(): bool
+// Подключение нескольких entry points (JS и CSS из Vite)
+includeAssets(array $entries): void
 ```
 
 ### Пример
@@ -367,14 +364,13 @@ $viteService = service(ViteService::class);
 
 // Development: подключит localhost:5173
 // Production: подключит собранные файлы из manifest
-$viteService->includeEntries(['app/main.ts']);
+$viteService->include('app/main.ts');
 
-// SSR рендеринг
-$html = $viteService->getSsrHtml('/catalog/', [
-    'products' => $products,
-    'userId' => \CUser::GetID()
-]);
+// Подключение нескольких файлов
+$viteService->includeAssets(['app/main.ts', 'app/styles.css']);
 ```
+
+Важно подключать в некешируемой области!
 
 ## LocationService
 
