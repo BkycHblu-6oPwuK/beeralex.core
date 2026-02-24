@@ -6,6 +6,9 @@ use Beeralex\Core\Traits\PathNormalizerTrait;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
+/**
+ * @deprecated Думаю лучше использовать сторонние библиотеки для логирования, например Monolog, так как они более гибкие и поддерживают множество форматов и обработчиков. Либо если подойдет, то реализацию Bitrix \Bitrix\Main\Diag\FileLogger
+ */
 class FileLogger implements LoggerInterface
 {
     use PathNormalizerTrait;
