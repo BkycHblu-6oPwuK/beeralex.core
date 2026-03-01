@@ -16,7 +16,6 @@
   - [Настройки модулей через Schema](configuration_schema.md)
   - [Traits](traits.md)
   - [Model (ORM)](model.md)
-  - [Logger (PSR-3)](logger.md)
 
 ## Установка
 
@@ -178,9 +177,8 @@ $groups = $userService->getDefaultUserGroups();
  * @template T
  * @param class-string<T> $class
  * @return T
- */
+*/
 $userService = service(UserService::class);
-$logger = service(LoggerFactoryContract::class);
 ```
 
 ### firstNotEmpty(mixed $default, ...$values): mixed
@@ -197,7 +195,7 @@ $config = firstNotEmpty([], $userConfig, $defaultConfig);
 
 ### toFile(mixed $data): void
 
-Быстрое логирование для отладки (пишет в default.log):
+Быстрое логирование для отладки (пишет в log.log):
 
 ```php
 // Простое логирование
@@ -214,7 +212,7 @@ toFile([
 toFile($request);
 ```
 
-**Примечание:** Использует FileLogger через DI-контейнер.
+**Примечание:** Использует helper `toFile()` или ядро Bitrix для получения логгера.
 
 ### coreLog(string $message, int $traceDepth = 6, bool $showArgs = false): void
 
@@ -352,14 +350,6 @@ try {
 
 [Подробная документация по конфигурации](./configuration.md)
 
-### Logger
-
-- **FileLogger** - Логирование в файлы
-- **FileLoggerFactory** - Фабрика для создания логгеров
-- **PSR-3 совместимость** - Поддержка стандарта PSR-3
-
-[Подробная документация по логированию](./logger.md)
-
 ### Трейты
 
 - **Cacheable** - Кеширование результатов методов
@@ -376,7 +366,6 @@ try {
 4. [Контроллеры](./controllers.md) - HTTP контроллеры и фильтры
 5. [Конфигурация](./configuration.md) - Система конфигурации
 6. [Настройки через Schema](./configuration_schema.md) - Декларативные настройки модулей
-7. [Логирование](./logger.md) - PSR-3 логирование событий
 8. [Трейты](./traits.md) - Переиспользуемые трейты
 9. [Model (ORM)](./model.md) - Динамические ORM сущности
 

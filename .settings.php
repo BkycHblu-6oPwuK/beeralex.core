@@ -9,8 +9,6 @@ use Beeralex\Core\Http\Adapter\BitrixToPsrResponse;
 use Beeralex\Core\Http\Adapter\PsrToBitrixRequest;
 use Beeralex\Core\Http\Adapter\PsrToBitrixResponse;
 use Beeralex\Core\Http\HttpFactory;
-use Beeralex\Core\Logger\FileLoggerFactory;
-use Beeralex\Core\Logger\LoggerFactoryContract;
 use Beeralex\Core\Model\SectionTableFactory;
 use Beeralex\Core\Repository\LocationRepository;
 use Beeralex\Core\Repository\PropertyFeaturesRepository;
@@ -40,13 +38,6 @@ return [
     ],
     'services' => [
         'value' => [
-            LoggerFactoryContract::class => [
-                'constructor' => static function () {
-                    return new FileLoggerFactory(
-                        baseDir: $_SERVER['DOCUMENT_ROOT'] . '/local/logs'
-                    );
-                },
-            ],
             ConfigLoaderFactory::class => [
                 'className' => ConfigLoaderFactory::class
             ],

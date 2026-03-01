@@ -25,12 +25,21 @@ if (!function_exists('toFile')) {
     {
         static $logger = null;
         if ($logger === null) {
-            $logger = service(\Beeralex\Core\Logger\LoggerFactoryContract::class)->channel();
+            $configService = service(\Beeralex\Core\Config\Config::class);
+            $moduleId = $configService->getModuleId();
+
+            $logger = \Bitrix\Main\Diag\Logger::create($moduleId);
+            if ($logger === null) {
+                $logFile = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR
+                    . 'local' . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . 'log.log';
+                $logger = new \Bitrix\Main\Diag\FileLogger($logFile);
+            }
         }
+
         if (!is_array($data)) {
             $data = [$data];
         }
-        $logger->info('', $data);
+        $logger->info(print_r($data, true));
     }
 }
 if (!function_exists('isLighthouse')) {

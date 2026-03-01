@@ -470,12 +470,9 @@ MyServiceContract::class => [
 
 ## Дополнительные функции
 
-### toFile() - Логирование в файл
+### toFile() - Логирование в файл log.log
 
 ```php
-/**
- * Быстрое логирование в файл через service(LoggerFactoryContract::class)
- */
 toFile(['user_id' => 123, 'action' => 'login']);
 toFile('Simple message');
 ```

@@ -163,25 +163,6 @@ echo $service->getLogDirectory('../logs');
 // /var/www/logs (после разрешения)
 ```
 
-### Применение в FileLogger
-
-```php
-class FileLogger
-{
-    use PathNormalizerTrait;
-    
-    public function __construct(string $channel, string $baseDir)
-    {
-        $normalizedDir = $this->normalizeBaseDir($baseDir);
-        if (!is_dir($normalizedDir)) {
-            mkdir($normalizedDir, 0777, true);
-        }
-        $this->logFile = rtrim($normalizedDir, DIRECTORY_SEPARATOR) 
-            . DIRECTORY_SEPARATOR . $channel . '.log';
-    }
-}
-```
-
 ## TableManagerTrait
 
 Трейт для управления таблицами ORM сущностей.
