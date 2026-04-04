@@ -2,7 +2,10 @@
 declare(strict_types=1);
 namespace Beeralex\Core\Http\Controllers;
 
+use Beeralex\Core\Http\Request\AbstractRequestDto;
+use Beeralex\Core\Http\Resources\Resource;
 use Bitrix\Main\Engine\Action;
+use Bitrix\Main\Engine\AutoWire\Parameter;
 use Bitrix\Main\Engine\Controller;
 use Bitrix\Main\Error;
 use Bitrix\Main\Web\Json;
@@ -13,59 +16,67 @@ use Bitrix\Main\Web\Json;
  */
 abstract class ApiController extends Controller
 {
+    public function getAutoWiredParameters(): array
+    {
+        return array_merge(parent::getAutoWiredParameters(), [
+            new Parameter(
+                AbstractRequestDto::class,
+                function (string $className) {
+                    return $className::fromArray($this->getRequestData());
+                }
+            ),
+            new Parameter(
+                Resource::class,
+                function (string $className) {
+                    return $className::make($this->getRequestData());
+                }
+            ),
+        ]);
+    }
+
     protected function processBeforeAction(Action $action): bool
     {
-        $request = $this->getRequest();
+        try {
+            $arguments = $action->getArguments();
+        } catch (\Throwable $exception) {
+            if ($exception->getPrevious() instanceof \JsonException) {
+                $this->addError(new Error('Некорректный JSON'));
+                return false;
+            }
 
+            throw $exception;
+        }
+
+        foreach ($arguments as $argument) {
+            if (!$argument instanceof AbstractRequestDto) {
+                continue;
+            }
+
+            if (!$argument->isValid()) {
+                foreach ($argument->getErrors() as $error) {
+                    $this->addError($error);
+                }
+
+                return false;
+            }
+        }
+
+        return parent::processBeforeAction($action);
+    }
+
+    private function getRequestData(): array
+    {
+        $request = $this->getRequest();
         $data = $request->isPost()
             ? $request->getPostList()->toArray()
             : $request->getQueryList()->toArray();
 
         if (empty($data) && $request->isJson()) {
-            try {
-                $data = Json::decode($request->getInput());
-            } catch (\Throwable) {
-                $this->addError(new Error('Некорректный JSON'));
-                return false;
-            }
+            $decoded = Json::decode($request->getInput());
+
+            return is_array($decoded) ? $decoded : [];
         }
 
-        $method = new \ReflectionMethod($this, $action->getName() . 'Action');
-        $params = $method->getParameters();
-        $arguments = [];
-
-        foreach ($params as $param) {
-            $type = $param->getType();
-
-            if (!$type || $type->isBuiltin()) {
-                continue;
-            }
-
-            /**
-             * @var string|\Beeralex\Core\Http\Request\AbstractRequestDto|\Beeralex\Core\Http\Resources\Resource $className
-             */
-            $className = $type->getName();
-            if (is_subclass_of($className, \Beeralex\Core\Http\Request\AbstractRequestDto::class)) {
-                $dto = $className::fromArray($data);
-                if (!$dto->isValid()) {
-                    foreach ($dto->getErrors() as $error) {
-                        $this->addError($error);
-                    }
-                    return false;
-                }
-                $arguments[$param->getName()] = $dto;
-                break;
-            } elseif(is_subclass_of($className, \Beeralex\Core\Http\Resources\Resource::class)) {
-                $resource = $className::make($data);
-                $arguments[$param->getName()] = $resource;
-                break;
-            }
-        }
-        
-        if (!empty($arguments)) {
-            $action->setArguments(array_merge($action->getArguments(), $arguments));
-        }
-        
-        return parent::processBeforeAction($action);
+        return $data;
     }
 }
