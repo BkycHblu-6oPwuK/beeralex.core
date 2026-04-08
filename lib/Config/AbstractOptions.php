@@ -8,6 +8,7 @@ use Bitrix\Main\Type\Dictionary;
 /**
  * Абстрактный класс для работы с настройками модуля
  * Наследуется от Dictionary для поддержки ArrayAccess, Iterator, Countable, JsonSerializable
+ * Все ключи настроек приводятся к нижнему регистру, т.к. битрикс возвращает в нижнем
  */
 abstract class AbstractOptions extends Dictionary
 {
@@ -17,8 +18,8 @@ abstract class AbstractOptions extends Dictionary
         if ($moduleId === '') {
             throw new \InvalidArgumentException('Module ID must be defined.');
         }
-        
-        $options = array_merge(Option::getDefaults($moduleId), Option::getForModule($moduleId));
+        $defaults = array_change_key_case(Option::getDefaults($moduleId));
+        $options = array_merge($defaults, Option::getForModule($moduleId));
         
         // Инициализируем Dictionary
         parent::__construct($options);

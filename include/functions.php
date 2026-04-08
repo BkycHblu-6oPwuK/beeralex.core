@@ -21,6 +21,9 @@ if (!function_exists('firstNotEmpty')) {
     }
 }
 if (!function_exists('toFile')) {
+    /**
+     * Записывает данные в лог-файл для отладки. Пишет в local/logs/log.log
+     */
     function toFile(mixed $data): void
     {
         static $logger = null;
@@ -43,6 +46,9 @@ if (!function_exists('toFile')) {
     }
 }
 if (!function_exists('isLighthouse')) {
+    /**
+     * Проверяет, что запрос пришёл от Google Lighthouse (для оптимизации рендеринга страниц при аудите)
+     */
     function isLighthouse(): bool
     {
         return (isset($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'Chrome-Lighthouse') !== false);
@@ -50,7 +56,7 @@ if (!function_exists('isLighthouse')) {
 }
 if (!function_exists('isImport')) {
     /**
-     * Обмен с 1с или нет
+     * Проверяет, что запрос пришёл от 1С (для обмена данными)
      */
     function isImport(): bool
     {
@@ -60,6 +66,7 @@ if (!function_exists('isImport')) {
 
 if (!function_exists('service')) {
     /**
+     * Удобная обёртка над Bitrix\Main\DI\ServiceLocator для получения сервисов по классу
      * @template T
      * @param class-string<T> $class
      * @return T
@@ -71,6 +78,9 @@ if (!function_exists('service')) {
 }
 
 if (!function_exists('coreLog')) {
+    /**
+     * Удобная обёртка над AddMessage2Log для логирования с указанием модуля и более подробной информации о стеке вызовов
+     */
     function coreLog(string $message, int $traceDepth = 6, bool $showArgs = false): void
     {
         \AddMessage2Log($message, service(\Beeralex\Core\Config\Config::class)->getModuleId(), $traceDepth, $showArgs);
@@ -79,7 +89,7 @@ if (!function_exists('coreLog')) {
 
 if (!function_exists('isCli')) {
     /**
-     * Проверяет, что скрипт запущен из-под cron
+     * Проверяет, что скрипт запущен из-под CLI
      *
      * @return bool
      */
