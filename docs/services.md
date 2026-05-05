@@ -502,7 +502,7 @@ $path = $pathService->normalizePath('/path//to///file');
 
 ## UrlService
 
-Сервис для работы с URL.
+Сервис для работы с URL инфоблоков: генерация URL элементов/разделов и очистка URL от служебных сегментов.
 
 ### Использование
 
@@ -511,11 +511,70 @@ use Beeralex\Core\Service\UrlService;
 
 $urlService = service(UrlService::class);
 
-// Получение текущего URL
-$currentUrl = $urlService->getCurrentUrl();
+// Очистить URL (удалить служебные части)
+$clean = $urlService->cleanUrl('/api/v1/catalog/category/');
+// Результат (при url_remove_parts: ['api', 'v1']): '/catalog/category/'
 
-// Построение URL с параметрами
-$url = $urlService->buildUrl('/catalog/', ['page' => 2, 'filter' => 'new']);
+// Получить URL раздела инфоблока
+$result = $urlService->getSectionUrl($sectionFields, '#SECTION_CODE_PATH#/');
+// ['url' => '/api/v1/catalog/category/', 'clean_url' => '/catalog/category/']
+
+// Получить URL элемента инфоблока
+$result = $urlService->getDetailUrl($elementFields, '#SECTION_CODE_PATH#/#ELEMENT_CODE#/');
+// ['url' => '/api/v1/catalog/category/item/', 'clean_url' => '/catalog/category/item/']
+```
+
+### Основные методы
+
+```php
+// Очистить URL — удалить служебные сегменты из url_remove_parts
+// $trailingSlash: null — использует настройку из конфига, true/false — принудительно
+cleanUrl(string $url, ?bool $trailingSlash = null): string
+
+// Получить URL раздела инфоблока
+getSectionUrl(array $sectionFields, string $template, bool $serverName = false, string $arrType = 'S'): array
+
+// Получить URL элемента инфоблока
+getDetailUrl(array $elementFields, string $template, bool $serverName = false, string $arrType = 'E'): array
+```
+
+### Настройка
+
+Конфигурация задаётся в секции `beeralex.core` файла `.settings_extra.php`:
+
+```php
+'beeralex.core' => [
+    'value' => [
+
+        // Сегменты пути, которые будут вырезаны из URL методом cleanUrl.
+        // Удаляет сегмент где бы он ни встречался в пути.
+        // Пример: '/api/v1/catalog/' → '/catalog/'
+        'url_remove_parts' => [
+            'bitrix/api',
+            'api',
+            'v1',
+        ],
+
+        // Поведение слеша на конце URL по умолчанию для cleanUrl.
+        // true  — всегда добавлять слеш на конце
+        // false — всегда убирать слеш на конце
+        // (не задан) — авто-режим: сохраняет слеш исходного URL
+        'url_trailing_slash' => true,
+    ]
+],
+```
+
+Значение `trailing_slash` можно переопределить в явном виде через второй аргумент `cleanUrl()`:
+
+```php
+// Принудительно убрать слеш, игнорируя конфиг
+$urlService->cleanUrl('/catalog/category/', false); // '/catalog/category'
+
+// Принудительно добавить слеш
+$urlService->cleanUrl('/catalog/item', true); // '/catalog/item/'
+
+// null (по умолчанию) — брать из конфига, иначе авто
+$urlService->cleanUrl('/catalog/item/'); // '/catalog/item/' (если trailing_slash не задан в конфиге)
 ```
 
 ## ClientService

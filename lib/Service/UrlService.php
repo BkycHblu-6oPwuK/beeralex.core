@@ -10,11 +10,13 @@ use Bitrix\Main\Loader;
 class UrlService
 {
     protected readonly array $removeParts;
+    protected readonly ?bool $trailingSlash;
 
     public function __construct()
     {
         Loader::requireModule('iblock');
         $this->removeParts = static::getRemoveParts();
+        $this->trailingSlash = static::getTrailingSlash();
     }
 
     /**
@@ -27,10 +29,28 @@ class UrlService
     }
 
     /**
-     * Удаляет указанные части из URL
+     * Получает из конфигурации поведение слеша на конце URL по умолчанию.
+     * true — добавлять, false — удалять, null — авто (сохраняет слеш оригинального URL)
      */
-    public function cleanUrl(string $url): string
+    public static function getTrailingSlash(): ?bool
     {
+        $config = Configuration::getInstance()->get('beeralex.core');
+        $value = $config['url_trailing_slash'] ?? Configuration::getInstance('beeralex.core')->get('url_trailing_slash');
+        return isset($value) ? (bool)$value : null;
+    }
+
+    /**
+     * Удаляет указанные части из URL
+     *
+     * @param string $url исходный URL
+     * @param ?bool $trailingSlash слеш на конце:
+     *   null — использует значение из конфига (trailing_slash), а если оно не задано — авто (сохраняет слеш оригинального URL);
+     *   true — принудительно добавить; false — принудительно удалить
+     */
+    public function cleanUrl(string $url, ?bool $trailingSlash = null): string
+    {
+        $hasTrailingSlash = $trailingSlash ?? $this->trailingSlash ?? str_ends_with($url, '/');
+
         foreach ($this->removeParts as $part) {
             $url = preg_replace('#(^|/)' . preg_quote($part, '#') . '(/|$)#', '/', $url);
         }
@@ -38,7 +58,11 @@ class UrlService
         $url = preg_replace('#/+#', '/', $url);
         $url = '/' . trim($url, '/');
 
-        return $url === '/' ? '/' : rtrim($url, '/');
+        if ($url === '/') {
+            return '/';
+        }
+
+        return $hasTrailingSlash ? $url . '/' : $url;
     }
 
     /**
