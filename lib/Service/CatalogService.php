@@ -6,8 +6,11 @@ namespace Beeralex\Core\Service;
 
 use Bitrix\Main\Loader;
 use Bitrix\Catalog\CatalogIblockTable;
+use Bitrix\Main\ORM\Entity;
 use Bitrix\Main\ORM\Query\Query;
 use Bitrix\Main\ORM\Fields\Relations\Reference;
+use Bitrix\Main\ORM\Fields\Relations\OneToMany;
+use Bitrix\Main\ORM\Query\Join;
 use Bitrix\Sale\Internals\StatusTable;
 
 class CatalogService
@@ -190,11 +193,14 @@ class CatalogService
      */
     public function addCatalogToQuery(Query $query, string $thisFieldReference = 'ID'): Query
     {
-        $query->registerRuntimeField('CATALOG', [
-            'data_type'  => \Bitrix\Catalog\ProductTable::class,
-            'reference'  => ["=this.{$thisFieldReference}" => 'ref.ID'],
-            'join_type'  => 'LEFT',
-        ]);
+        $query->registerRuntimeField(
+            new Reference(
+                'CATALOG',
+                \Bitrix\Catalog\ProductTable::class,
+                ["=this.{$thisFieldReference}" => 'ref.ID'],
+                ['join_type' => 'LEFT']
+            )
+        );
 
         return $query;
     }
@@ -204,13 +210,22 @@ class CatalogService
      */
     public function addPriceToQuery(Query $query, string $thisFieldReference = 'ID'): Query
     {
-        $query->registerRuntimeField('PRICE', [
-            'data_type' => \Bitrix\Catalog\PriceTable::class,
-            'reference' => ["=this.{$thisFieldReference}" => 'ref.PRODUCT_ID'],
-            'join_type' => 'LEFT',
-        ]);
+        $thisEntity = $query->getEntity()->getDataClass()::getEntity();
+        $priceEntity = \Bitrix\Catalog\PriceTable::getEntity();
 
-        return $query;
+        $backReferenceName = 'PRODUCT_REF_' . $thisFieldReference;
+
+        if (!$priceEntity->hasField($backReferenceName)) {
+            $priceEntity->addField(new Reference(
+                $backReferenceName,
+                $query->getEntity()->getDataClass(),
+                Join::on('this.PRODUCT_ID', 'ref.' . $thisFieldReference)
+            ));
+        }
+
+        $thisEntity->addField(new OneToMany('PRICE', \Bitrix\Catalog\PriceTable::class, $backReferenceName));
+
+        return $this->cloneNewQuery($query, $thisEntity);
     }
 
     /**
@@ -218,12 +233,31 @@ class CatalogService
      */
     public function addStoreToQuery(Query $query, string $thisFieldReference = 'ID'): Query
     {
-        $query->registerRuntimeField('STORE_PRODUCT', [
-            'data_type' => \Bitrix\Catalog\StoreProductTable::class,
-            'reference' => ["=this.{$thisFieldReference}" => 'ref.PRODUCT_ID'],
-            'join_type' => 'LEFT',
-        ]);
+        $thisEntity = $query->getEntity()->getDataClass()::getEntity();
+        $storeEntity = \Bitrix\Catalog\StoreProductTable::getEntity();
 
-        return $query;
+        $backReferenceName = 'PRODUCT_REF_' . $thisFieldReference;
+
+        if (!$storeEntity->hasField($backReferenceName)) {
+            $storeEntity->addField(new Reference(
+                $backReferenceName,
+                $query->getEntity()->getDataClass(),
+                Join::on('this.PRODUCT_ID', 'ref.' . $thisFieldReference)
+            ));
+        }
+
+        $thisEntity->addField(new OneToMany('STORE_PRODUCT', \Bitrix\Catalog\StoreProductTable::class, $backReferenceName));
+
+        return $this->cloneNewQuery($query, $thisEntity);
+    }
+
+    protected function cloneNewQuery(Query $query, ?Entity $entity = null): Query
+    {
+        $newQuery = clone $query;
+        if ($entity !== null) {
+            $reflection = new \ReflectionProperty($newQuery, 'entity');
+            $reflection->setValue($newQuery, $entity);
+        }
+        return $newQuery;
     }
 }
