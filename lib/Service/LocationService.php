@@ -5,10 +5,8 @@ namespace Beeralex\Core\Service;
 
 use Bitrix\Main\Loader;
 use Beeralex\Core\Repository\LocationRepository;
+use Bitrix\Sale\Location\TypeTable;
 
-/**
- * перенос в beeralex.catalog
- */
 class LocationService
 {
     public function __construct(
@@ -35,6 +33,9 @@ class LocationService
         );
     }
 
+    /**
+     * Получение локации по коду города.
+     */
     public function getLocationByCityCode(string $cityCode, int $cacheTtl = 0): array
     {
         return $this->locationRepository->get(
@@ -47,11 +48,17 @@ class LocationService
         );
     }
 
+    /**
+     * Получение всех локаций.
+     */
     public function getAllLocations(int $cacheTtl = 0): array
     {
         return $this->get(cacheTtl: $cacheTtl);
     }
 
+    /**
+     * Получение всех городов.
+    */
     public function getAllCities($select = ['ID', 'CITY_NAME' => 'NAME.NAME'], int $cacheTtl = 0): array
     {
         return $this->get(
@@ -64,6 +71,9 @@ class LocationService
         );
     }
 
+    /**
+     * Получение локации по названию города.
+    */
     public function getLocationByCityName(string $cityName, int $cacheTtl = 0): array
     {
         return $this->get(
@@ -76,6 +86,9 @@ class LocationService
         );
     }
 
+    /**
+     * Получение ближайшего города по коду локации.
+    */
     public function getNearestCityByLocationCode(string $locationCode, int $cacheTtl = 0): array
     {
         $location = $this->get(
@@ -140,8 +153,23 @@ class LocationService
     }
 
     /**
+     * Получение карты типов локаций в формате ['CODE' => ID]
+     */
+    public function getGroupMap(): array
+    {
+        $result = [];
+        $groupMap = TypeTable::getList([
+            'select' => ['ID', 'CODE'],
+            'cache'  => ['ttl' => 3600000],
+        ]);
+        while ($row = $groupMap->fetch()) {
+            $result[$row['CODE']] = (int)$row['ID'];
+        }
+        return $result;
+    }
+
+    /**
      * поиск через компонент sale.location.selector.search
-     * (оставляем в сервисе, т.к. это не ORM-метод)
      */
     public function find(string $query, int $pageSize = 50, $page = 0): array
     {
