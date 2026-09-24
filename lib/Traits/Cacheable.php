@@ -11,12 +11,12 @@ use Bitrix\Main\Result;
 
 trait Cacheable
 {
-    protected readonly Cache $cache;
+    protected readonly Cache $cachebleInstance;
 
     protected function initCacheInstance(): void
     {
-        if (!isset($this->cache)) {
-            $this->cache = Cache::createInstance();
+        if (!isset($this->cachebleInstance)) {
+            $this->cachebleInstance = Cache::createInstance();
         }
     }
 
@@ -48,20 +48,20 @@ trait Cacheable
         try {
             $cacheSettings->fromCache = false;
             if ($cacheSettings->time > 0) {
-                if ($this->cache->initCache($cacheSettings->time, $cacheSettings->key, $cacheSettings->dir)) {
+                if ($this->cachebleInstance->initCache($cacheSettings->time, $cacheSettings->key, $cacheSettings->dir)) {
                     $cacheSettings->fromCache = true;
-                    return $this->cache->getVars();
-                } elseif ($this->cache->startDataCache()) {
+                    return $this->cachebleInstance->getVars();
+                } elseif ($this->cachebleInstance->startDataCache()) {
                     $result = $callback();
                     if (empty($result)) {
                         throw new \RuntimeException('Error getting data when requesting API');
                     }
                     if ($cacheSettings->abortCache) {
                         $cacheSettings->abortCache = false;
-                        $this->cache->abortDataCache();
+                        $this->cachebleInstance->abortDataCache();
                         return $result;
                     }
-                    $this->cache->endDataCache($result);
+                    $this->cachebleInstance->endDataCache($result);
 
                     return $result;
                 }
@@ -73,7 +73,7 @@ trait Cacheable
             }
             return $result;
         } catch (\Exception $e) {
-            $this->cache->abortDataCache();
+            $this->cachebleInstance->abortDataCache();
             throw $e;
         }
     }
