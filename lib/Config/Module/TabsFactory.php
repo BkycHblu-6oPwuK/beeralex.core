@@ -26,7 +26,7 @@ class TabsFactory
 
                     case 'input':
                         $tab->addField(
-                            (new Fields\Input($field['name'], $field['help'], $field['size'] ?? null))
+                            (new Fields\Input($field['name'], $field['help']))
                                 ->setLabel($field['label'] ?? '')
                                 ->setDefaultValue($field['default'] ?? '')
                                 ->setDisabled($field['disabled'] ?? false)

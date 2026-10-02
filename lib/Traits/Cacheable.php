@@ -6,42 +6,52 @@ namespace Beeralex\Core\Traits;
 
 use Bitrix\Main\Data\Cache;
 use Beeralex\Core\Dto\CacheSettingsDTO;
-use Beeralex\Core\Http\Resources\Resource;
-use Bitrix\Main\Result;
+use Bitrix\Main\Application;
 
 trait Cacheable
 {
     protected readonly Cache $cachebleInstance;
+    private bool $tagCacheStarted = false;
 
     protected function initCacheInstance(): void
     {
         if (!isset($this->cachebleInstance)) {
-            $this->cachebleInstance = Cache::createInstance();
+            $this->cachebleInstance = Application::getInstance()->getCache();
         }
     }
 
+    /**
+     * @param string $dir Директория для кэширования относительно корня сайта, id сайта будет добавлен автоматически
+     */
     public function getCacheSettingsDto(
         int $time,
         string $key,
         string $dir = '',
-        bool $public = false,
-        bool $useEtag = false,
-        bool $staleWhileRevalidate = false
+        bool $useTagCache = false
     ): CacheSettingsDTO {
         return new CacheSettingsDTO(
             time: $time,
             key: $key,
             dir: $dir,
-            public: $public,
-            useEtag: $useEtag,
-            staleWhileRevalidate: $staleWhileRevalidate
+            useTagCache: $useTagCache
         );
+    }
+
+    public function generateCacheId(mixed ...$keys): string
+    {
+        return md5(serialize($keys));
     }
 
     /**
      * Получает данные из кеша или выполняет callback и кеширует результат. Bitrix кеширование.
+     *
+     * @param CacheSettingsDTO $cacheSettings Настройки кеша. Если задан tagCachePath (или dir),
+     *        вокруг записи данных открывается тегированный кеш.
+     * @param callable $callback fn(): mixed — получение данных.
+     * @param callable|null $onCache fn(mixed $result, \Bitrix\Main\Data\TaggedCache $taggedCache): void
+     *        Вызывается если useTagCache === true в CacheSettingsDTO и после получения $result и ДО endTagCache. Здесь вызывающий код сам регистрирует нужные теги.
      */
-    protected function getCached(CacheSettingsDTO $cacheSettings, callable $callback)
+    protected function getCached(CacheSettingsDTO $cacheSettings, callable $callback, ?callable $onCache = null)
     {
         $this->initCacheInstance();
 
@@ -52,16 +62,24 @@ trait Cacheable
                     $cacheSettings->fromCache = true;
                     return $this->cachebleInstance->getVars();
                 } elseif ($this->cachebleInstance->startDataCache()) {
+                    $this->startTagCache($cacheSettings);
                     $result = $callback();
                     if (empty($result)) {
                         throw new \RuntimeException('Error getting data when requesting API');
                     }
                     if ($cacheSettings->abortCache) {
                         $cacheSettings->abortCache = false;
+                        $this->abortTagCache($cacheSettings);
                         $this->cachebleInstance->abortDataCache();
                         return $result;
                     }
+
+                    if ($cacheSettings->useTagCache && $onCache !== null && $this->tagCacheStarted) {
+                        $onCache($result, Application::getInstance()->getTaggedCache());
+                    }
+
                     $this->cachebleInstance->endDataCache($result);
+                    $this->endTagCache($cacheSettings);
 
                     return $result;
                 }
@@ -74,102 +92,35 @@ trait Cacheable
             return $result;
         } catch (\Exception $e) {
             $this->cachebleInstance->abortDataCache();
+            $this->abortTagCache($cacheSettings);
             throw $e;
         }
     }
 
-    /**
-     * Применяет HTTP кеширование через заголовки
-     */
-    protected function applyHttpCache(CacheSettingsDTO $cacheSettings): void
+    private function startTagCache(CacheSettingsDTO $cacheSettings): void
     {
-        if ($cacheSettings->time <= 0) {
-            header('Cache-Control: no-store');
-            header('Pragma: no-cache');
-            header('Expires: 0');
+        if (!$cacheSettings->useTagCache || $cacheSettings->dir === '') {
             return;
         }
-
-        if (!$cacheSettings->public) {
-            header('Cache-Control: private, no-store');
-            header('Vary: ' . implode(', ', $cacheSettings->vary));
-            return;
-        }
-
-        $directives = [
-            'public',
-            'max-age=' . $cacheSettings->time,
-        ];
-
-        if ($cacheSettings->staleWhileRevalidate) {
-            $directives[] = 'stale-while-revalidate=' . min(300, $cacheSettings->time);
-        }
-
-        if ($cacheSettings->mustRevalidate) {
-            $directives[] = 'must-revalidate';
-        }
-
-        if ($cacheSettings->immutable) {
-            $directives[] = 'immutable';
-        }
-
-        header('Cache-Control: ' . implode(', ', $directives));
-        header('Vary: ' . implode(', ', $cacheSettings->vary));
+        Application::getInstance()->getTaggedCache()->startTagCache($cacheSettings->dir);
+        $this->tagCacheStarted = true;
     }
 
-    /**
-     * Применяет ETag заголовок и пытается вернуть 304 Not Modified, вычисление хеша на основе полезной нагрузки, примерно в конце запроса. Экономит трафик при больших ответах.
-     */
-    protected function applyEtag(
-        string|array|Result|Resource $payload,
-        CacheSettingsDTO $cacheSettings
-    ): void {
-        if (!$cacheSettings->useEtag || !$cacheSettings->public) {
+    private function endTagCache(CacheSettingsDTO $cacheSettings): void
+    {
+        if (!$cacheSettings->useTagCache || !$this->tagCacheStarted) {
             return;
         }
-
-        $body = match (true) {
-            is_string($payload) => $payload,
-            is_array($payload) => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            $payload instanceof Result => json_encode($payload->getData(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            $payload instanceof Resource => json_encode($payload->toArray(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            default => null,
-        };
-
-        if ($body === null || $body === '') {
-            return;
-        }
-
-        $etag = 'W/"' . sha1($body) . '"';
-        header('ETag: ' . $etag);
-
-        if (
-            isset($_SERVER['HTTP_IF_NONE_MATCH']) &&
-            trim($_SERVER['HTTP_IF_NONE_MATCH']) === $etag
-        ) {
-            http_response_code(304);
-            exit;
-        }
+        Application::getInstance()->getTaggedCache()->endTagCache();
+        $this->tagCacheStarted = false;
     }
 
-    /**
-     * Пытается вернуть 304 Not Modified на основе ключа кеша, без вычисления всего ответа, примерно в начале запроса. Экономит ресурсы сервера при больших ответах. Нужно гарантировать уникальность ключа кеша, если данные меняются, иначе всегда будет 304.
-     */
-    protected function tryReturn304FromCacheKey(CacheSettingsDTO $cacheSettings): void
+    private function abortTagCache(CacheSettingsDTO $cacheSettings): void
     {
-        if (!$cacheSettings->useEtag || !$cacheSettings->public) {
+        if (!$cacheSettings->useTagCache || !$this->tagCacheStarted) {
             return;
         }
-
-        $etag = 'W/"' . sha1($cacheSettings->key) . '"';
-        header('ETag: ' . $etag);
-
-        if (
-            isset($_SERVER['HTTP_IF_NONE_MATCH']) &&
-            trim($_SERVER['HTTP_IF_NONE_MATCH']) === $etag
-        ) {
-            http_response_code(304);
-            exit;
-        }
+        Application::getInstance()->getTaggedCache()->abortTagCache();
+        $this->tagCacheStarted = false;
     }
 }

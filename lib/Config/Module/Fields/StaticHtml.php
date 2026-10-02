@@ -6,6 +6,7 @@ class StaticHtml extends Field
 {
     public function __construct(string $text, string $value)
     {
+        $this->setName('');
         $this->setText($text);
         $this->setDefaultValue($value);
     }
