@@ -6,6 +6,7 @@ namespace Beeralex\Core\Service;
 
 use Bitrix\Main\Config\Configuration;
 use Bitrix\Main\Loader;
+use Bitrix\Main\Web\Uri;
 
 class UrlService
 {
@@ -46,12 +47,26 @@ class UrlService
      * @param ?bool $trailingSlash слеш на конце:
      *   null — использует значение из конфига (trailing_slash), а если оно не задано — авто (сохраняет слеш оригинального URL);
      *   true — принудительно добавить; false — принудительно удалить
+     * @param ?array $removeParts части URL, которые нужно удалить, объединяются с настройками по умолчанию
      */
-    public function cleanUrl(string $url, ?bool $trailingSlash = null): string
+    public function cleanUrl(string $url, ?bool $trailingSlash = null, ?array $removeParts = null): string
     {
+        $uri = new Uri($url);
+        $url = $uri->getPath();
         $hasTrailingSlash = $trailingSlash ?? $this->trailingSlash ?? str_ends_with($url, '/');
+        $buildUrl = function (string $url) use ($uri) {
+            $scheme = $uri->getScheme();
+            $host = $uri->getHost();
+            $port = match ($uri->getPort()) {
+                80, 443, null => null,
+                default => $uri->getPort(),
+            };
+            $query = $uri->getQuery();
+            return ($scheme ? $scheme . '://' : '') . $host . ($port ? ':' . $port : '') . $url . ($query ? '?' . $query : '');
+        };
 
-        foreach ($this->removeParts as $part) {
+        $removeParts = $removeParts ? array_merge($this->removeParts, $removeParts) : $this->removeParts;
+        foreach ($removeParts as $part) {
             $url = preg_replace('#(^|/)' . preg_quote($part, '#') . '(/|$)#', '/', $url);
         }
 
@@ -59,10 +74,10 @@ class UrlService
         $url = '/' . trim($url, '/');
 
         if ($url === '/') {
-            return '/';
+            return $buildUrl($url);
         }
 
-        return $hasTrailingSlash ? $url . '/' : $url;
+        return $buildUrl($hasTrailingSlash ? $url . '/' : $url);
     }
 
     /**
@@ -86,7 +101,7 @@ class UrlService
      * Возвращает URL элемента инфоблока
      * @param array{
      *     CODE: string,
-     *     ID: string
+     *     ID: string,
      *     IBLOCK_SECTION_ID: int
      * } $elementFields
      * @return array{

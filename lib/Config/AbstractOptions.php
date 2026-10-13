@@ -19,7 +19,7 @@ abstract class AbstractOptions extends Dictionary
             throw new \InvalidArgumentException('Module ID must be defined.');
         }
         $defaults = array_change_key_case(Option::getDefaults($moduleId));
-        $options = array_merge($defaults, Option::getForModule($moduleId));
+        $options = array_merge(array_filter($defaults), array_change_key_case(Option::getForModule($moduleId)));
         
         // Инициализируем Dictionary
         parent::__construct($options);

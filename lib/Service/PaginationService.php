@@ -1,16 +1,19 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Beeralex\Core\Service;
 
+use Bitrix\Main\Context;
 use Bitrix\Main\Loader;
 
 class PaginationService
 {
-    public function __construct() 
+    public function __construct()
     {
         Loader::includeModule("iblock");
     }
-    
+
     /**
      * Преобразует объект навигации CIBlockResult в массив с данными пагинации
      */
@@ -84,5 +87,35 @@ class PaginationService
             'pageCount'          => $pageCount,
             'paginationUrlParam' => $pageUrlParam,
         ];
+    }
+
+    /**
+     * Возвращает параметры пагинации из запроса (например, номер текущей страницы). 
+     * По переданному имени параметра или по умолчанию ищет параметр вида PAGEN_X.
+     * @return array{name: string, value: int}|null
+     */
+    public function getPaginationParam(?string $pageUrlParam = null): ?array
+    {
+        $request = Context::getCurrent()->getRequest();
+        $list = match (true) {
+            $request->isPost() => $request->getPostList(),
+            $request->isJson() => $request->getJsonList(),
+            default => $request->getQueryList(),
+        };
+        foreach ($list as $name => $value) {
+            if ($pageUrlParam && $name === $pageUrlParam) {
+                return [
+                    'name' => $name,
+                    'value' => (int)$value,
+                ];
+            } elseif (preg_match('/^PAGEN_(\d+)$/', $name, $matches)) {
+                return [
+                    'name' => $name,
+                    'value' => (int)$value,
+                ];
+            }
+        }
+
+        return null;
     }
 }

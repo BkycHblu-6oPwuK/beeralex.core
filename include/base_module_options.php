@@ -5,11 +5,13 @@
  * Схема должна быть в формате, поддерживаемом TabsFactory::fromSchema, т.е. содержать массив табов, каждый таб должен содержать массив полей, каждое поле должно содержать имя и дефолтное значение
  */
 use Bitrix\Main\HttpApplication;
+use Bitrix\Main\Context;
 use Bitrix\Main\Loader;
 use Bitrix\Main\Config\Option;
 use Beeralex\Core\Config\ConfigLoaderFactory;
 use Beeralex\Core\Config\Module\TabsFactory;
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Main\SiteTable;
 
 if(!$moduleDirPath) {
     throw new \InvalidArgumentException('Module dir path is required');
@@ -17,6 +19,13 @@ if(!$moduleDirPath) {
 
 $request = HttpApplication::getInstance()->getContext()->getRequest();
 $module_id = htmlspecialcharsbx($request["mid"] != "" ? $request["mid"] : $request["id"]);
+$site_id = htmlspecialcharsbx($request["site"] ?? "");
+if($site_id) {
+    $site_id = SiteTable::getById($site_id)->fetch()['LID'] ?? '';
+    if($site_id) {
+        Context::getCurrent()->setSite($site_id);
+    }
+}
 $POST_RIGHT = $APPLICATION->GetGroupRight($module_id);
 
 if ($POST_RIGHT < "S") {
@@ -64,10 +73,10 @@ if ($request->isPost() && check_bitrix_sessid()) {
                 if ($request["apply"]) {
                     $optionValue = $request->getPost($name);
                     $optionValue = is_array($optionValue) ? implode(",", $optionValue) : $optionValue;
-                    Option::set($module_id, $name, $optionValue);
+                    Option::set($module_id, $name, $optionValue, $site_id);
                 }
                 if ($request["default"]) {
-                    Option::set($module_id, $name, $filed->getDefaultValue());
+                    Option::set($module_id, $name, $filed->getDefaultValue(), $site_id);
                 }
             }
         }
@@ -80,9 +89,16 @@ $tabControl = new CAdminTabControl(
 );
 
 $tabControl->Begin();
+$searchParams = [
+    'mid' => $module_id,
+    'lang' => LANG,
+];
+if ($site_id) {
+    $searchParams['site'] = $site_id;
+}
 ?>
 
-<form action="<?= $APPLICATION->GetCurPage() ?>?mid=<?= $module_id ?>&lang=<?= LANG ?>" method="post">
+<form action="<?= $APPLICATION->GetCurPage() ?>?<?= http_build_query($searchParams) ?>" method="post">
     <? foreach ($tabs as $tab) {
         if ($options = $tab->getOptionsFormattedArray()) {
             $tabControl->BeginNextTab();

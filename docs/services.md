@@ -300,6 +300,9 @@ getPages(int $currentPage, int $pageCount, int $pageWindow = 5): array
 
 // Создание пагинации по количеству элементов
 getPagination(int $itemsCnt, int $pageSize, string $pageUrlParam = 'page'): array
+
+// Получение параметра URL для пагинации, по умолчанию получит страницу с параметра PAGEN_{N}
+getPaginationParam(?string $pageUrlParam = null): string
 ```
 
 ### Пример
@@ -529,7 +532,8 @@ $result = $urlService->getDetailUrl($elementFields, '#SECTION_CODE_PATH#/#ELEMEN
 ```php
 // Очистить URL — удалить служебные сегменты из url_remove_parts
 // $trailingSlash: null — использует настройку из конфига, true/false — принудительно
-cleanUrl(string $url, ?bool $trailingSlash = null): string
+// $removeParts: дополнительные части URL для удаления, объединяются с настройками по умолчанию
+cleanUrl(string $url, ?bool $trailingSlash = null, ?array $removeParts = null): string
 
 // Получить URL раздела инфоблока
 getSectionUrl(array $sectionFields, string $template, bool $serverName = false, string $arrType = 'S'): array
